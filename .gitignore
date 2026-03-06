@@ -1,3 +1,10 @@
+# custom ignores
+data/
+*.env
+todo.txt
+.idea/
+
+# preset ignores
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
