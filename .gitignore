@@ -1,5 +1,7 @@
 # custom ignores
 data/
+data_preprocessed/
+class_mapping.json
 *.env
 todo.txt
 .idea/
