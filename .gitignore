@@ -5,6 +5,9 @@ class_mapping.json
 *.env
 todo.txt
 .idea/
+checkpoints/*
+!checkpoints/model_config.json
+wandb/
 
 # preset ignores
 # Byte-compiled / optimized / DLL files
