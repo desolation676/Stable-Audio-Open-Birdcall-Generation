@@ -12,6 +12,7 @@ checkpoints/*
 !checkpoints/model_config_hybrid.json
 wandb/
 runs/
+generations/
 
 # preset ignores
 # Byte-compiled / optimized / DLL files
