@@ -3,6 +3,7 @@ data/
 data_preprocessed/
 data_preprocessed_general/
 data_preprocessed_hybrid/
+flats/*
 class_mapping.json
 *.env
 todo.txt
@@ -13,6 +14,8 @@ checkpoints/*
 wandb/
 runs/
 generations/
+venv_gen/*
+venv_birdnet/*
 
 # preset ignores
 # Byte-compiled / optimized / DLL files
