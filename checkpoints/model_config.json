@@ -1,6 +1,6 @@
 {
     "model_type": "diffusion_cond",
-    "sample_size": 524288,
+    "sample_size": 2097152,
     "sample_rate": 44100,
     "audio_channels": 2,
     "model": {
@@ -41,48 +41,49 @@
             }
         },
         "conditioning": {
-    "configs": [
-        {
-            "id": "prompt",
-            "type": "t5",
+            "configs": [
+                {
+                    "id": "prompt",
+                    "type": "t5",
+                    "config": {
+                        "t5_model_name": "t5-base",
+                        "max_length": 128
+                    }
+                },
+                {
+                    "id": "seconds_start",
+                    "type": "number",
+                    "config": {
+                        "min_val": 0,
+                        "max_val": 512
+                    }
+                },
+                {
+                    "id": "seconds_total",
+                    "type": "number",
+                    "config": {
+                        "min_val": 0,
+                        "max_val": 512
+                    }
+                }
+            ],
+            "cond_dim": 768
+        },
+        "diffusion": {
+            "cross_attention_cond_ids": ["prompt", "seconds_start", "seconds_total"],
+            "global_cond_ids": ["seconds_start", "seconds_total"],
+            "type": "dit",
             "config": {
-                "t5_model_name": "t5-base",
-                "max_length": 128
+                "io_channels": 64,
+                "embed_dim": 1536,
+                "depth": 24,
+                "num_heads": 24,
+                "cond_token_dim": 768,
+                "global_cond_dim": 1536,
+                "project_cond_tokens": false,
+                "transformer_type": "continuous_transformer"
             }
         },
-        {
-            "id": "seconds_start",
-            "type": "int",
-            "config": { "min_val": 0, "max_val": 512 }
-        },
-        {
-            "id": "seconds_total",
-            "type": "int",
-            "config": { "min_val": 0, "max_val": 512 }
-        },
-        {
-            "id": "species_id",
-            "type": "int",
-            "config": { "min_val": 0, "max_val": 21 }
-        }
-    ],
-    "cond_dim": 768
-},
-"diffusion": {
-    "cross_attention_cond_ids": ["prompt"],
-    "global_cond_ids": ["seconds_start", "seconds_total", "species_id"],
-    "type": "dit",
-    "config": {
-        "io_channels": 64,
-        "embed_dim": 1536,
-        "depth": 24,
-        "num_heads": 24,
-        "cond_token_dim": 768,
-        "global_cond_dim": 2304,
-        "project_cond_tokens": false,
-        "transformer_type": "continuous_transformer"
-    }
-},
         "io_channels": 64
     },
     "training": {
@@ -93,7 +94,7 @@
                 "optimizer": {
                     "type": "AdamW",
                     "config": {
-                        "lr": 1e-5,
+                        "lr": 5e-5,
                         "betas": [0.9, 0.999],
                         "weight_decay": 1e-3
                     }
@@ -113,30 +114,10 @@
             "demo_steps": 250,
             "num_demos": 4,
             "demo_cond": [
-                {
-                    "prompt": "A field recording of a  bird singing in nature, stereo audio.",
-                    "species_id": 0,
-                    "seconds_start": 0,
-                    "seconds_total": 12
-                },
-                {
-                    "prompt": "A field recording of bird singing in nature, stereo audio.",
-                    "species_id": 1,
-                    "seconds_start": 0,
-                    "seconds_total": 12
-                },
-                {
-                    "prompt": "A field recording of a bird singing in nature, stereo audio.",
-                    "species_id": 2,
-                    "seconds_start": 0,
-                    "seconds_total": 12
-                },
-                {
-                    "prompt": "A field recording of a bird singing in nature, stereo audio.",
-                    "species_id": 3,
-                    "seconds_start": 0,
-                    "seconds_total": 12
-                }
+                {"prompt": "Amen break 174 BPM", "seconds_start": 0, "seconds_total": 12},
+                {"prompt": "A beautiful orchestral symphony, classical music", "seconds_start": 0, "seconds_total": 160},
+                {"prompt": "Chill hip-hop beat, chillhop", "seconds_start": 0, "seconds_total": 190},
+                {"prompt": "A pop song about love and loss", "seconds_start": 0, "seconds_total": 180}
             ],
             "demo_cfg_scales": [3, 6, 9]
         }

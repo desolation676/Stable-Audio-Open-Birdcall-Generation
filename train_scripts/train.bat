@@ -6,7 +6,7 @@ set PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 python stable-audio-tools/train.py ^
   --config-file stable-audio-tools/defaults.ini ^
   --dataset-config dataset.json ^
-  --model-config checkpoints/model_config.json ^
+  --model-config checkpoints/model_config_CA_general.json ^
   --name xeno_canto_finetune ^
   --save-dir checkpoints ^
   --pretrained-ckpt-path checkpoints/model.safetensors ^

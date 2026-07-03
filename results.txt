@@ -1,0 +1,813 @@
+REAL:
+American Pipit: 80.0% (96/120)
+American Robin: 91.7% (463/505)
+Brewer'S Blackbird: 98.0% (49/50)
+Cassin'S Finch: 95.9% (118/123)
+Clark'S Nutcracker: 94.5% (86/91)
+Dark-Eyed Junco: 85.2% (300/352)
+Dusky Flycatcher: 93.8% (106/113)
+Fox Sparrow: 91.3% (157/172)
+Gray-Crowned Rosy-Finch: 71.0% (22/31)
+Hermit Thrush: 95.6% (260/272)
+Mallard: 89.9% (447/497)
+Mountain Bluebird: 91.2% (31/34)
+Mountain Chickadee: 95.4% (185/194)
+Northern Flicker: 84.9% (180/212)
+Orange-Crowned Warbler: 92.4% (195/211)
+Rock Wren: 97.8% (91/93)
+Spotted Sandpiper: 83.5% (86/103)
+Warbling Vireo: 96.5% (384/398)
+White-Crowned Sparrow: 96.1% (295/307)
+Yellow Warbler: 62.4% (78/125)
+Yellow-Rumped Warbler: 86.2% (162/188)
+
+OVERALL ACCURACY: 90.46%
+
+--- BirdNET Accuracy Results specifc_6000_cfg3 ---
+American Pipit: 83.3% (25/30)
+American Robin: 86.7% (26/30)
+Brewer'S Blackbird: 13.3% (4/30)
+Cassin'S Finch: 80.0% (24/30)
+Clark'S Nutcracker: 90.0% (27/30)
+Dark-Eyed Junco: 50.0% (15/30)
+Dusky Flycatcher: 20.0% (6/30)
+Fox Sparrow: 10.0% (3/30)
+Gray-Crowned Rosy-Finch: 6.7% (2/30)
+Hermit Thrush: 66.7% (20/30)
+Mallard: 96.7% (29/30)
+Mountain Bluebird: 13.3% (4/30)
+Mountain Chickadee: 56.7% (17/30)
+Northern Flicker: 40.0% (12/30)
+Orange-Crowned Warbler: 63.3% (19/30)
+Rock Wren: 30.0% (9/30)
+Spotted Sandpiper: 73.3% (22/30)
+Warbling Vireo: 70.0% (21/30)
+White-Crowned Sparrow: 96.7% (29/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 63.3% (19/30)
+
+OVERALL ACCURACY: 52.86%
+FAD: 0.00021
+
+--- BirdNET Accuracy Results specifc_6000_cfg6 ---
+
+American Pipit: 100.0% (30/30)
+American Robin: 100.0% (30/30)
+Brewer'S Blackbird: 33.3% (10/30)
+Cassin'S Finch: 96.7% (29/30)
+Clark'S Nutcracker: 100.0% (30/30)
+Dark-Eyed Junco: 40.0% (12/30)
+Dusky Flycatcher: 43.3% (13/30)
+Fox Sparrow: 40.0% (12/30)
+Gray-Crowned Rosy-Finch: 0.0% (0/30)
+Hermit Thrush: 80.0% (24/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 30.0% (9/30)
+Mountain Chickadee: 60.0% (18/30)
+Northern Flicker: 53.3% (16/30)
+Orange-Crowned Warbler: 80.0% (24/30)
+Rock Wren: 43.3% (13/30)
+Spotted Sandpiper: 83.3% (25/30)
+Warbling Vireo: 66.7% (20/30)
+White-Crowned Sparrow: 100.0% (30/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 83.3% (25/30)
+
+OVERALL ACCURACY: 63.49%
+FAD: 0.00014
+
+--- BirdNET Accuracy Results specifc_6000_cfg9 ---
+
+American Pipit: 100.0% (30/30)
+American Robin: 100.0% (30/30)
+Brewer'S Blackbird: 33.3% (10/30)
+Cassin'S Finch: 100.0% (30/30)
+Clark'S Nutcracker: 100.0% (30/30)
+Dark-Eyed Junco: 43.3% (13/30)
+Dusky Flycatcher: 50.0% (15/30)
+Fox Sparrow: 33.3% (10/30)
+Gray-Crowned Rosy-Finch: 3.3% (1/30)
+Hermit Thrush: 80.0% (24/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 53.3% (16/30)
+Mountain Chickadee: 63.3% (19/30)
+Northern Flicker: 60.0% (18/30)
+Orange-Crowned Warbler: 90.0% (27/30)
+Rock Wren: 46.7% (14/30)
+Spotted Sandpiper: 83.3% (25/30)
+Warbling Vireo: 83.3% (25/30)
+White-Crowned Sparrow: 100.0% (30/30)
+Yellow Warbler: 3.3% (1/30)
+Yellow-Rumped Warbler: 86.7% (26/30)
+
+OVERALL ACCURACY: 67.30%
+FAD: 0.00013
+
+--- BirdNET Accuracy specifc_10000_cfg3 ---
+
+American Pipit: 53.3% (16/30)
+American Robin: 83.3% (25/30)
+Brewer'S Blackbird: 40.0% (12/30)
+Cassin'S Finch: 86.7% (26/30)
+Clark'S Nutcracker: 66.7% (20/30)
+Dark-Eyed Junco: 26.7% (8/30)
+Dusky Flycatcher: 50.0% (15/30)
+Fox Sparrow: 23.3% (7/30)
+Gray-Crowned Rosy-Finch: 13.3% (4/30)
+Hermit Thrush: 80.0% (24/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 46.7% (14/30)
+Mountain Chickadee: 86.7% (26/30)
+Northern Flicker: 80.0% (24/30)
+Orange-Crowned Warbler: 60.0% (18/30)
+Rock Wren: 36.7% (11/30)
+Spotted Sandpiper: 23.3% (7/30)
+Warbling Vireo: 63.3% (19/30)
+White-Crowned Sparrow: 100.0% (30/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 46.7% (14/30)
+
+OVERALL ACCURACY: 55.56%
+FAD: 0.00051
+
+--- BirdNET Accuracy specifc_10000_cfg6 ---
+
+American Pipit: 66.7% (20/30)
+American Robin: 96.7% (29/30)
+Brewer'S Blackbird: 63.3% (19/30)
+Cassin'S Finch: 93.3% (28/30)
+Clark'S Nutcracker: 86.7% (26/30)
+Dark-Eyed Junco: 50.0% (15/30)
+Dusky Flycatcher: 80.0% (24/30)
+Fox Sparrow: 43.3% (13/30)
+Gray-Crowned Rosy-Finch: 30.0% (9/30)
+Hermit Thrush: 100.0% (30/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 86.7% (26/30)
+Mountain Chickadee: 96.7% (29/30)
+Northern Flicker: 96.7% (29/30)
+Orange-Crowned Warbler: 90.0% (27/30)
+Rock Wren: 50.0% (15/30)
+Spotted Sandpiper: 23.3% (7/30)
+Warbling Vireo: 93.3% (28/30)
+White-Crowned Sparrow: 100.0% (30/30)
+Yellow Warbler: 3.3% (1/30)
+Yellow-Rumped Warbler: 56.7% (17/30)
+
+OVERALL ACCURACY: 71.75%
+FAD: 0.00042
+
+--- BirdNET Accuracy specifc_10000_cfg9 ---
+
+American Pipit: 90.0% (27/30)
+American Robin: 100.0% (30/30)
+Brewer'S Blackbird: 56.7% (17/30)
+Cassin'S Finch: 96.7% (29/30)
+Clark'S Nutcracker: 90.0% (27/30)
+Dark-Eyed Junco: 30.0% (9/30)
+Dusky Flycatcher: 70.0% (21/30)
+Fox Sparrow: 63.3% (19/30)
+Gray-Crowned Rosy-Finch: 33.3% (10/30)
+Hermit Thrush: 100.0% (30/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 83.3% (25/30)
+Mountain Chickadee: 96.7% (29/30)
+Northern Flicker: 96.7% (29/30)
+Orange-Crowned Warbler: 90.0% (27/30)
+Rock Wren: 53.3% (16/30)
+Spotted Sandpiper: 13.3% (4/30)
+Warbling Vireo: 100.0% (30/30)
+White-Crowned Sparrow: 100.0% (30/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 66.7% (20/30)
+
+OVERALL ACCURACY: 72.86%
+FAD: 0.00035
+
+--- BirdNET Accuracy Results general6000_cfg3 ---
+American Pipit: 0.0% (0/30)
+American Robin: 3.3% (1/30)
+Brewer'S Blackbird: 3.3% (1/30)
+Cassin'S Finch: 3.3% (1/30)
+Clark'S Nutcracker: 0.0% (0/30)
+Dark-Eyed Junco: 3.3% (1/30)
+Dusky Flycatcher: 0.0% (0/30)
+Fox Sparrow: 3.3% (1/30)
+Gray-Crowned Rosy-Finch: 0.0% (0/30)
+Hermit Thrush: 6.7% (2/30)
+Mallard: 66.7% (20/30)
+Mountain Bluebird: 0.0% (0/30)
+Mountain Chickadee: 3.3% (1/30)
+Northern Flicker: 0.0% (0/30)
+Orange-Crowned Warbler: 10.0% (3/30)
+Rock Wren: 3.3% (1/30)
+Spotted Sandpiper: 0.0% (0/30)
+Warbling Vireo: 6.7% (2/30)
+White-Crowned Sparrow: 10.0% (3/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 0.0% (0/30)
+
+OVERALL ACCURACY: 5.87%
+FAD: 0.0004
+
+--- BirdNET Accuracy Results general6000_cfg6 ---
+
+American Pipit: 6.7% (2/30)
+American Robin: 6.7% (2/30)
+Brewer'S Blackbird: 3.3% (1/30)
+Cassin'S Finch: 0.0% (0/30)
+Clark'S Nutcracker: 0.0% (0/30)
+Dark-Eyed Junco: 3.3% (1/30)
+Dusky Flycatcher: 0.0% (0/30)
+Fox Sparrow: 3.3% (1/30)
+Gray-Crowned Rosy-Finch: 0.0% (0/30)
+Hermit Thrush: 0.0% (0/30)
+Mallard: 63.3% (19/30)
+Mountain Bluebird: 0.0% (0/30)
+Mountain Chickadee: 0.0% (0/30)
+Northern Flicker: 0.0% (0/30)
+Orange-Crowned Warbler: 3.3% (1/30)
+Rock Wren: 0.0% (0/30)
+Spotted Sandpiper: 0.0% (0/30)
+Warbling Vireo: 10.0% (3/30)
+White-Crowned Sparrow: 16.7% (5/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 6.7% (2/30)
+
+OVERALL ACCURACY: 5.87%
+FAD: 0.0005
+
+--- BirdNET Accuracy Results general6000_cfg9 ---
+
+American Pipit: 0.0% (0/30)
+American Robin: 10.0% (3/30)
+Brewer'S Blackbird: 0.0% (0/30)
+Cassin'S Finch: 6.7% (2/30)
+Clark'S Nutcracker: 0.0% (0/30)
+Dark-Eyed Junco: 6.7% (2/30)
+Dusky Flycatcher: 0.0% (0/30)
+Fox Sparrow: 0.0% (0/30)
+Gray-Crowned Rosy-Finch: 3.3% (1/30)
+Hermit Thrush: 0.0% (0/30)
+Mallard: 80.0% (24/30)
+Mountain Bluebird: 0.0% (0/30)
+Mountain Chickadee: 3.3% (1/30)
+Northern Flicker: 0.0% (0/30)
+Orange-Crowned Warbler: 13.3% (4/30)
+Rock Wren: 0.0% (0/30)
+Spotted Sandpiper: 0.0% (0/30)
+Warbling Vireo: 6.7% (2/30)
+White-Crowned Sparrow: 6.7% (2/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 3.3% (1/30)
+
+OVERALL ACCURACY: 6.67%
+FAD: 0.00038
+
+--- BirdNET Accuracy Results baseline_cfg3 ---
+American Pipit: 0.0% (0/30)
+American Robin: 0.0% (0/30)
+Brewer'S Blackbird: 0.0% (0/30)
+Cassin'S Finch: 0.0% (0/30)
+Clark'S Nutcracker: 0.0% (0/30)
+Dark-Eyed Junco: 3.3% (1/30)
+Dusky Flycatcher: 0.0% (0/30)
+Fox Sparrow: 0.0% (0/30)
+Gray-Crowned Rosy-Finch: 0.0% (0/30)
+Hermit Thrush: 0.0% (0/30)
+Mallard: 0.0% (0/30)
+Mountain Bluebird: 0.0% (0/30)
+Mountain Chickadee: 0.0% (0/30)
+Northern Flicker: 0.0% (0/30)
+Orange-Crowned Warbler: 0.0% (0/30)
+Rock Wren: 0.0% (0/30)
+Spotted Sandpiper: 0.0% (0/30)
+Warbling Vireo: 0.0% (0/30)
+White-Crowned Sparrow: 0.0% (0/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 0.0% (0/30)
+
+OVERALL ACCURACY: 0.16%
+FAD: 0.00023
+
+--- BirdNET Accuracy Results baseline_cfg6 ---
+American Pipit: 0.0% (0/30)
+American Robin: 0.0% (0/30)
+Brewer'S Blackbird: 0.0% (0/30)
+Cassin'S Finch: 0.0% (0/30)
+Clark'S Nutcracker: 0.0% (0/30)
+Dark-Eyed Junco: 0.0% (0/30)
+Dusky Flycatcher: 0.0% (0/30)
+Fox Sparrow: 0.0% (0/30)
+Grey-Crowned Rosy Finch: 0.0% (0/30)
+Hermit Thrush: 0.0% (0/30)
+Mallard: 0.0% (0/30)
+Mountain Bluebird: 0.0% (0/30)
+Mountain Chickadee: 0.0% (0/30)
+Northern Flicker: 0.0% (0/30)
+Orange-Crowned Warbler: 0.0% (0/30)
+Rock Wren: 3.3% (1/30)
+Spotted Sandpiper: 0.0% (0/30)
+Warbling Vireo: 0.0% (0/30)
+White-Crowned Sparrow: 0.0% (0/30)
+Mangrove Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 0.0% (0/30)
+
+OVERALL ACCURACY: 0.16%
+FAD: 0.0016
+
+--- BirdNET Accuracy Results baseline_cfg9---
+American Pipit: 0.0% (0/30)
+American Robin: 0.0% (0/30)
+Brewer'S Blackbird: 0.0% (0/30)
+Cassin'S Finch: 0.0% (0/30)
+Clark'S Nutcracker: 0.0% (0/30)
+Dark-Eyed Junco: 6.7% (2/30)
+Dusky Flycatcher: 0.0% (0/30)
+Fox Sparrow: 0.0% (0/30)
+Gray-Crowned Rosy-Finch: 0.0% (0/30)
+Hermit Thrush: 0.0% (0/30)
+Mallard: 0.0% (0/30)
+Mountain Bluebird: 0.0% (0/30)
+Mountain Chickadee: 0.0% (0/30)
+Northern Flicker: 0.0% (0/30)
+Orange-Crowned Warbler: 0.0% (0/30)
+Rock Wren: 3.3% (1/30)
+Spotted Sandpiper: 3.3% (1/30)
+Warbling Vireo: 0.0% (0/30)
+White-Crowned Sparrow: 0.0% (0/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 0.0% (0/30)
+
+OVERALL ACCURACY: 0.63%
+FAD:0.0022
+
+--- BirdNET Accuracy Results general_CA_6000_cfg3---
+American Pipit: 96.7% (29/30)
+American Robin: 86.7% (26/30)
+Brewer'S Blackbird: 46.7% (14/30)
+Cassin'S Finch: 83.3% (25/30)
+Clark'S Nutcracker: 93.3% (28/30)
+Dark-Eyed Junco: 16.7% (5/30)
+Dusky Flycatcher: 63.3% (19/30)
+Fox Sparrow: 56.7% (17/30)
+Gray-Crowned Rosy-Finch: 6.7% (2/30)
+Hermit Thrush: 80.0% (24/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 63.3% (19/30)
+Mountain Chickadee: 66.7% (20/30)
+Northern Flicker: 43.3% (13/30)
+Orange-Crowned Warbler: 26.7% (8/30)
+Rock Wren: 36.7% (11/30)
+Spotted Sandpiper: 53.3% (16/30)
+Warbling Vireo: 93.3% (28/30)
+White-Crowned Sparrow: 53.3% (16/30)
+Yellow Warbler: 20.0% (6/30)
+Yellow-Rumped Warbler: 50.0% (15/30)
+
+OVERALL ACCURACY: 58.89%
+FAD:0.000464
+
+--- BirdNET Accuracy Results general_CA_6000_cfg6---
+
+American Pipit: 100.0% (30/30)
+American Robin: 100.0% (30/30)
+Brewer'S Blackbird: 70.0% (21/30)
+Cassin'S Finch: 100.0% (30/30)
+Clark'S Nutcracker: 100.0% (30/30)
+Dark-Eyed Junco: 60.0% (18/30)
+Dusky Flycatcher: 83.3% (25/30)
+Fox Sparrow: 80.0% (24/30)
+Gray-Crowned Rosy-Finch: 3.3% (1/30)
+Hermit Thrush: 90.0% (27/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 96.7% (29/30)
+Mountain Chickadee: 96.7% (29/30)
+Northern Flicker: 56.7% (17/30)
+Orange-Crowned Warbler: 80.0% (24/30)
+Rock Wren: 63.3% (19/30)
+Spotted Sandpiper: 70.0% (21/30)
+Warbling Vireo: 100.0% (30/30)
+White-Crowned Sparrow: 93.3% (28/30)
+Yellow Warbler: 10.0% (3/30)
+Yellow-Rumped Warbler: 56.7% (17/30)
+
+OVERALL ACCURACY: 76.67%
+FAD:0.000264
+
+--- BirdNET Accuracy Results general_CA_6000_cfg9---
+American Pipit: 100.0% (30/30)
+American Robin: 100.0% (30/30)
+Brewer'S Blackbird: 83.3% (25/30)
+Cassin'S Finch: 100.0% (30/30)
+Clark'S Nutcracker: 100.0% (30/30)
+Dark-Eyed Junco: 70.0% (21/30)
+Dusky Flycatcher: 96.7% (29/30)
+Fox Sparrow: 100.0% (30/30)
+Gray-Crowned Rosy-Finch: 6.7% (2/30)
+Hermit Thrush: 100.0% (30/30)
+Mallard: 96.7% (29/30)
+Mountain Bluebird: 83.3% (25/30)
+Mountain Chickadee: 93.3% (28/30)
+Northern Flicker: 70.0% (21/30)
+Orange-Crowned Warbler: 73.3% (22/30)
+Rock Wren: 66.7% (20/30)
+Spotted Sandpiper: 86.7% (26/30)
+Warbling Vireo: 100.0% (30/30)
+White-Crowned Sparrow: 100.0% (30/30)
+Yellow Warbler: 26.7% (8/30)
+Yellow-Rumped Warbler: 76.7% (23/30)
+
+OVERALL ACCURACY: 82.38%
+FAD:0.000198
+
+--- BirdNET Accuracy Results general_CA_10000_cfg3---
+American Pipit: 80.0% (24/30)
+American Robin: 96.7% (29/30)
+Brewer'S Blackbird: 80.0% (24/30)
+Cassin'S Finch: 86.7% (26/30)
+Clark'S Nutcracker: 96.7% (29/30)
+Dark-Eyed Junco: 63.3% (19/30)
+Dusky Flycatcher: 80.0% (24/30)
+Fox Sparrow: 63.3% (19/30)
+Gray-Crowned Rosy-Finch: 30.0% (9/30)
+Hermit Thrush: 90.0% (27/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 73.3% (22/30)
+Mountain Chickadee: 93.3% (28/30)
+Northern Flicker: 76.7% (23/30)
+Orange-Crowned Warbler: 50.0% (15/30)
+Rock Wren: 60.0% (18/30)
+Spotted Sandpiper: 56.7% (17/30)
+Warbling Vireo: 93.3% (28/30)
+White-Crowned Sparrow: 93.3% (28/30)
+Yellow Warbler: 6.7% (2/30)
+Yellow-Rumped Warbler: 60.0% (18/30)
+
+OVERALL ACCURACY: 72.86%
+FAD:0.00020929
+
+--- BirdNET Accuracy Results general_CA_10000_cfg6---
+American Pipit: 96.7% (29/30)
+American Robin: 100.0% (30/30)
+Brewer'S Blackbird: 93.3% (28/30)
+Cassin'S Finch: 100.0% (30/30)
+Clark'S Nutcracker: 96.7% (29/30)
+Dark-Eyed Junco: 90.0% (27/30)
+Dusky Flycatcher: 96.7% (29/30)
+Fox Sparrow: 83.3% (25/30)
+Gray-Crowned Rosy-Finch: 43.3% (13/30)
+Hermit Thrush: 100.0% (30/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 100.0% (30/30)
+Mountain Chickadee: 96.7% (29/30)
+Northern Flicker: 76.7% (23/30)
+Orange-Crowned Warbler: 86.7% (26/30)
+Rock Wren: 80.0% (24/30)
+Spotted Sandpiper: 83.3% (25/30)
+Warbling Vireo: 96.7% (29/30)
+White-Crowned Sparrow: 96.7% (29/30)
+Yellow Warbler: 30.0% (9/30)
+Yellow-Rumped Warbler: 93.3% (28/30)
+
+OVERALL ACCURACY: 87.62%
+FAD:0.000136
+
+--- BirdNET Accuracy Results general_CA_10000_cfg9---
+American Pipit: 100.0% (30/30)
+American Robin: 100.0% (30/30)
+Brewer'S Blackbird: 93.3% (28/30)
+Cassin'S Finch: 96.7% (29/30)
+Clark'S Nutcracker: 83.3% (25/30)
+Dark-Eyed Junco: 90.0% (27/30)
+Dusky Flycatcher: 96.7% (29/30)
+Fox Sparrow: 93.3% (28/30)
+Gray-Crowned Rosy-Finch: 40.0% (12/30)
+Hermit Thrush: 100.0% (30/30)
+Mallard: 96.7% (29/30)
+Mountain Bluebird: 93.3% (28/30)
+Mountain Chickadee: 100.0% (30/30)
+Northern Flicker: 93.3% (28/30)
+Orange-Crowned Warbler: 90.0% (27/30)
+Rock Wren: 73.3% (22/30)
+Spotted Sandpiper: 83.3% (25/30)
+Warbling Vireo: 100.0% (30/30)
+White-Crowned Sparrow: 100.0% (30/30)
+Yellow Warbler: 13.3% (4/30)
+Yellow-Rumped Warbler: 100.0% (30/30)
+
+OVERALL ACCURACY: 87.46%
+FAD:0.000145
+
+--- BirdNET Accuracy Results specific_CA_6000_cfg3---
+American Pipit: 90.0% (27/30)
+American Robin: 36.7% (11/30)
+Brewer'S Blackbird: 23.3% (7/30)
+Cassin'S Finch: 50.0% (15/30)
+Clark'S Nutcracker: 93.3% (28/30)
+Dark-Eyed Junco: 40.0% (12/30)
+Dusky Flycatcher: 0.0% (0/30)
+Fox Sparrow: 3.3% (1/30)
+Gray-Crowned Rosy-Finch: 23.3% (7/30)
+Hermit Thrush: 36.7% (11/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 90.0% (27/30)
+Mountain Chickadee: 73.3% (22/30)
+Northern Flicker: 30.0% (9/30)
+Orange-Crowned Warbler: 36.7% (11/30)
+Rock Wren: 36.7% (11/30)
+Spotted Sandpiper: 36.7% (11/30)
+Warbling Vireo: 96.7% (29/30)
+White-Crowned Sparrow: 80.0% (24/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 20.0% (6/30)
+
+OVERALL ACCURACY: 47.46%
+FAD:0.000337
+
+--- BirdNET Accuracy Results specific_CA_6000_cfg6---
+American Pipit: 100.0% (30/30)
+American Robin: 90.0% (27/30)
+Brewer'S Blackbird: 43.3% (13/30)
+Cassin'S Finch: 86.7% (26/30)
+Clark'S Nutcracker: 100.0% (30/30)
+Dark-Eyed Junco: 63.3% (19/30)
+Dusky Flycatcher: 13.3% (4/30)
+Fox Sparrow: 33.3% (10/30)
+Gray-Crowned Rosy-Finch: 30.0% (9/30)
+Hermit Thrush: 63.3% (19/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 90.0% (27/30)
+Mountain Chickadee: 76.7% (23/30)
+Northern Flicker: 73.3% (22/30)
+Orange-Crowned Warbler: 73.3% (22/30)
+Rock Wren: 60.0% (18/30)
+Spotted Sandpiper: 80.0% (24/30)
+Warbling Vireo: 93.3% (28/30)
+White-Crowned Sparrow: 90.0% (27/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 46.7% (14/30)
+
+OVERALL ACCURACY: 66.98%
+FAD:0.00022
+
+--- BirdNET Accuracy Results specific_CA_6000_cfg9---
+American Pipit: 100.0% (30/30)
+American Robin: 96.7% (29/30)
+Brewer'S Blackbird: 43.3% (13/30)
+Cassin'S Finch: 96.7% (29/30)
+Clark'S Nutcracker: 100.0% (30/30)
+Dark-Eyed Junco: 83.3% (25/30)
+Dusky Flycatcher: 13.3% (4/30)
+Fox Sparrow: 43.3% (13/30)
+Gray-Crowned Rosy-Finch: 43.3% (13/30)
+Hermit Thrush: 66.7% (20/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 100.0% (30/30)
+Mountain Chickadee: 86.7% (26/30)
+Northern Flicker: 70.0% (21/30)
+Orange-Crowned Warbler: 86.7% (26/30)
+Rock Wren: 36.7% (11/30)
+Spotted Sandpiper: 76.7% (23/30)
+Warbling Vireo: 100.0% (30/30)
+White-Crowned Sparrow: 93.3% (28/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 46.7% (14/30)
+
+OVERALL ACCURACY: 70.63%
+FAD:0.000187
+
+--- BirdNET Accuracy Results specific_CA_10000_cfg3---
+--- BirdNET Accuracy Results ---
+American Pipit: 100.0% (30/30)
+American Robin: 60.0% (18/30)
+Brewer'S Blackbird: 50.0% (15/30)
+Cassin'S Finch: 90.0% (27/30)
+Clark'S Nutcracker: 100.0% (30/30)
+Dark-Eyed Junco: 33.3% (10/30)
+Dusky Flycatcher: 30.0% (9/30)
+Fox Sparrow: 30.0% (9/30)
+Gray-Crowned Rosy-Finch: 33.3% (10/30)
+Hermit Thrush: 90.0% (27/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 80.0% (24/30)
+Mountain Chickadee: 83.3% (25/30)
+Northern Flicker: 60.0% (18/30)
+Orange-Crowned Warbler: 93.3% (28/30)
+Rock Wren: 30.0% (9/30)
+Spotted Sandpiper: 76.7% (23/30)
+Warbling Vireo: 83.3% (25/30)
+White-Crowned Sparrow: 86.7% (26/30)
+Yellow Warbler: 3.3% (1/30)
+Yellow-Rumped Warbler: 50.0% (15/30)
+
+OVERALL ACCURACY: 64.92%
+FAD:0.0004
+
+--- BirdNET Accuracy Results specific_CA_10000_cfg6---
+American Pipit: 100.0% (30/30)
+American Robin: 100.0% (30/30)
+Brewer'S Blackbird: 80.0% (24/30)
+Cassin'S Finch: 90.0% (27/30)
+Clark'S Nutcracker: 100.0% (30/30)
+Dark-Eyed Junco: 66.7% (20/30)
+Dusky Flycatcher: 70.0% (21/30)
+Fox Sparrow: 63.3% (19/30)
+Gray-Crowned Rosy-Finch: 26.7% (8/30)
+Hermit Thrush: 93.3% (28/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 86.7% (26/30)
+Mountain Chickadee: 100.0% (30/30)
+Northern Flicker: 76.7% (23/30)
+Orange-Crowned Warbler: 86.7% (26/30)
+Rock Wren: 46.7% (14/30)
+Spotted Sandpiper: 96.7% (29/30)
+Warbling Vireo: 96.7% (29/30)
+White-Crowned Sparrow: 100.0% (30/30)
+Yellow Warbler: 13.3% (4/30)
+Yellow-Rumped Warbler: 73.3% (22/30)
+
+OVERALL ACCURACY: 79.37%
+FAD:0.000244
+
+--- BirdNET Accuracy Results specific_CA_10000_cfg9---
+American Pipit: 100.0% (30/30)
+American Robin: 100.0% (30/30)
+Brewer'S Blackbird: 83.3% (25/30)
+Cassin'S Finch: 86.7% (26/30)
+Clark'S Nutcracker: 100.0% (30/30)
+Dark-Eyed Junco: 50.0% (15/30)
+Dusky Flycatcher: 76.7% (23/30)
+Fox Sparrow: 76.7% (23/30)
+Gray-Crowned Rosy-Finch: 43.3% (13/30)
+Hermit Thrush: 100.0% (30/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 96.7% (29/30)
+Mountain Chickadee: 96.7% (29/30)
+Northern Flicker: 86.7% (26/30)
+Orange-Crowned Warbler: 83.3% (25/30)
+Rock Wren: 53.3% (16/30)
+Spotted Sandpiper: 93.3% (28/30)
+Warbling Vireo: 100.0% (30/30)
+White-Crowned Sparrow: 100.0% (30/30)
+Yellow Warbler: 13.3% (4/30)
+Yellow-Rumped Warbler: 96.7% (29/30)
+
+OVERALL ACCURACY: 82.70%
+FAD:0.000175
+
+--- BirdNET Accuracy Results no_prompt_6000_cfg3---
+American Pipit: 93.3% (28/30)
+American Robin: 60.0% (18/30)
+Brewer'S Blackbird: 43.3% (13/30)
+Cassin'S Finch: 43.3% (13/30)
+Clark'S Nutcracker: 93.3% (28/30)
+Dark-Eyed Junco: 43.3% (13/30)
+Dusky Flycatcher: 13.3% (4/30)
+Fox Sparrow: 6.7% (2/30)
+Gray-Crowned Rosy-Finch: 13.3% (4/30)
+Hermit Thrush: 16.7% (5/30)
+Mallard: 96.7% (29/30)
+Mountain Bluebird: 86.7% (26/30)
+Mountain Chickadee: 23.3% (7/30)
+Northern Flicker: 30.0% (9/30)
+Orange-Crowned Warbler: 33.3% (10/30)
+Rock Wren: 30.0% (9/30)
+Spotted Sandpiper: 56.7% (17/30)
+Warbling Vireo: 83.3% (25/30)
+White-Crowned Sparrow: 70.0% (21/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 20.0% (6/30)
+
+OVERALL ACCURACY: 45.56%
+FAD:0.00041
+
+--- BirdNET Accuracy Results no_prompt_6000_cfg6---
+American Pipit: 96.7% (29/30)
+American Robin: 86.7% (26/30)
+Brewer'S Blackbird: 26.7% (8/30)
+Cassin'S Finch: 80.0% (24/30)
+Clark'S Nutcracker: 96.7% (29/30)
+Dark-Eyed Junco: 50.0% (15/30)
+Dusky Flycatcher: 20.0% (6/30)
+Fox Sparrow: 3.3% (1/30)
+Gray-Crowned Rosy-Finch: 13.3% (4/30)
+Hermit Thrush: 23.3% (7/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 93.3% (28/30)
+Mountain Chickadee: 50.0% (15/30)
+Northern Flicker: 43.3% (13/30)
+Orange-Crowned Warbler: 43.3% (13/30)
+Rock Wren: 33.3% (10/30)
+Spotted Sandpiper: 80.0% (24/30)
+Warbling Vireo: 96.7% (29/30)
+White-Crowned Sparrow: 76.7% (23/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 23.3% (7/30)
+
+OVERALL ACCURACY: 54.13%
+FAD:0.000497
+
+--- BirdNET Accuracy Results no_prompt_6000_cfg9---
+American Pipit: 96.7% (29/30)
+American Robin: 73.3% (22/30)
+Brewer'S Blackbird: 43.3% (13/30)
+Cassin'S Finch: 83.3% (25/30)
+Clark'S Nutcracker: 90.0% (27/30)
+Dark-Eyed Junco: 40.0% (12/30)
+Dusky Flycatcher: 16.7% (5/30)
+Fox Sparrow: 3.3% (1/30)
+Gray-Crowned Rosy-Finch: 20.0% (6/30)
+Hermit Thrush: 30.0% (9/30)
+Mallard: 93.3% (28/30)
+Mountain Bluebird: 100.0% (30/30)
+Mountain Chickadee: 46.7% (14/30)
+Northern Flicker: 46.7% (14/30)
+Orange-Crowned Warbler: 56.7% (17/30)
+Rock Wren: 46.7% (14/30)
+Spotted Sandpiper: 90.0% (27/30)
+Warbling Vireo: 96.7% (29/30)
+White-Crowned Sparrow: 76.7% (23/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 10.0% (3/30)
+
+OVERALL ACCURACY: 55.24%
+FAD:0.000499
+
+--- BirdNET Accuracy Results no_prompt_10000_cfg3---
+American Pipit: 93.3% (28/30)
+American Robin: 73.3% (22/30)
+Brewer'S Blackbird: 43.3% (13/30)
+Cassin'S Finch: 56.7% (17/30)
+Clark'S Nutcracker: 100.0% (30/30)
+Dark-Eyed Junco: 36.7% (11/30)
+Dusky Flycatcher: 40.0% (12/30)
+Fox Sparrow: 36.7% (11/30)
+Gray-Crowned Rosy-Finch: 13.3% (4/30)
+Hermit Thrush: 70.0% (21/30)
+Mallard: 96.7% (29/30)
+Mountain Bluebird: 100.0% (30/30)
+Mountain Chickadee: 96.7% (29/30)
+Northern Flicker: 50.0% (15/30)
+Orange-Crowned Warbler: 53.3% (16/30)
+Rock Wren: 40.0% (12/30)
+Spotted Sandpiper: 73.3% (22/30)
+Warbling Vireo: 70.0% (21/30)
+White-Crowned Sparrow: 93.3% (28/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 76.7% (23/30)
+
+OVERALL ACCURACY: 62.54%
+FAD:0.000583
+
+--- BirdNET Accuracy Results no_prompt_10000_cfg6---
+American Pipit: 100.0% (30/30)
+American Robin: 90.0% (27/30)
+Brewer'S Blackbird: 63.3% (19/30)
+Cassin'S Finch: 53.3% (16/30)
+Clark'S Nutcracker: 100.0% (30/30)
+Dark-Eyed Junco: 46.7% (14/30)
+Dusky Flycatcher: 56.7% (17/30)
+Fox Sparrow: 46.7% (14/30)
+Gray-Crowned Rosy-Finch: 10.0% (3/30)
+Hermit Thrush: 86.7% (26/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 96.7% (29/30)
+Mountain Chickadee: 80.0% (24/30)
+Northern Flicker: 56.7% (17/30)
+Orange-Crowned Warbler: 73.3% (22/30)
+Rock Wren: 36.7% (11/30)
+Spotted Sandpiper: 93.3% (28/30)
+Warbling Vireo: 76.7% (23/30)
+White-Crowned Sparrow: 96.7% (29/30)
+Yellow Warbler: 0.0% (0/30)
+Yellow-Rumped Warbler: 80.0% (24/30)
+
+OVERALL ACCURACY: 68.73%
+FAD:0.000472
+
+--- BirdNET Accuracy Results no_prompt_10000_cfg9---
+American Pipit: 90.0% (27/30)
+American Robin: 93.3% (28/30)
+Brewer'S Blackbird: 36.7% (11/30)
+Cassin'S Finch: 63.3% (19/30)
+Clark'S Nutcracker: 93.3% (28/30)
+Dark-Eyed Junco: 33.3% (10/30)
+Dusky Flycatcher: 60.0% (18/30)
+Fox Sparrow: 43.3% (13/30)
+Gray-Crowned Rosy-Finch: 13.3% (4/30)
+Hermit Thrush: 80.0% (24/30)
+Mallard: 100.0% (30/30)
+Mountain Bluebird: 96.7% (29/30)
+Mountain Chickadee: 83.3% (25/30)
+Northern Flicker: 73.3% (22/30)
+Orange-Crowned Warbler: 80.0% (24/30)
+Rock Wren: 43.3% (13/30)
+Spotted Sandpiper: 83.3% (25/30)
+Warbling Vireo: 93.3% (28/30)
+White-Crowned Sparrow: 100.0% (30/30)
+Yellow Warbler: 3.3% (1/30)
+Yellow-Rumped Warbler: 90.0% (27/30)
+
+OVERALL ACCURACY: 69.21%
+FAD:0.0006

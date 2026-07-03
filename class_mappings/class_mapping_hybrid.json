@@ -1,0 +1,86 @@
+{
+    "amepip": {
+        "id": 0,
+        "name": "Buff-bellied Pipit (Anthus rubescens japonicus)"
+    },
+    "amerob": {
+        "id": 1,
+        "name": "American Robin (Turdus migratorius)"
+    },
+    "brebla": {
+        "id": 2,
+        "name": "Brewer's Blackbird (Euphagus cyanocephalus)"
+    },
+    "casfin": {
+        "id": 3,
+        "name": "Cassin's Finch (Haemorhous cassinii)"
+    },
+    "clanut": {
+        "id": 4,
+        "name": "Clark's Nutcracker (Nucifraga columbiana)"
+    },
+    "daejun": {
+        "id": 5,
+        "name": "Dark-eyed Junco (Junco hyemalis hyemalis)"
+    },
+    "dusfly": {
+        "id": 6,
+        "name": "American Dusky Flycatcher (Empidonax oberholseri)"
+    },
+    "foxspa": {
+        "id": 7,
+        "name": "Fox Sparrow (Passerella iliaca)"
+    },
+    "herthr": {
+        "id": 8,
+        "name": "Hermit Thrush (Catharus guttatus)"
+    },
+    "mallar3": {
+        "id": 9,
+        "name": "Mallard (Anas platyrhynchos)"
+    },
+    "moublu": {
+        "id": 10,
+        "name": "Mountain Bluebird (Sialia currucoides)"
+    },
+    "mouchi": {
+        "id": 11,
+        "name": "Mountain Chickadee (Poecile gambeli)"
+    },
+    "norfli": {
+        "id": 12,
+        "name": "Northern Flicker (Colaptes auratus)"
+    },
+    "orcwar": {
+        "id": 13,
+        "name": "Orange-crowned Warbler (Leiothlypis celata)"
+    },
+    "rocwre": {
+        "id": 14,
+        "name": "Rock Wren (Salpinctes obsoletus obsoletus)"
+    },
+    "sposan": {
+        "id": 15,
+        "name": "Spotted Sandpiper (Actitis macularius)"
+    },
+    "warvir": {
+        "id": 16,
+        "name": "Warbling Vireo (Vireo gilvus gilvus)"
+    },
+    "whcspa": {
+        "id": 17,
+        "name": "White-crowned Sparrow (Zonotrichia leucophrys oriantha)"
+    },
+    "yelwar": {
+        "id": 18,
+        "name": "Mangrove Warbler (Setophaga petechia ruficapilla)"
+    },
+    "yerwar": {
+        "id": 19,
+        "name": "Myrtle Warbler (Setophaga coronata coronata)"
+    },
+    "gcrfin": {
+        "id": 20,
+        "name": "Grey-crowned Rosy Finch (Leucosticte tephrocotis umbrina)"
+    }
+}
