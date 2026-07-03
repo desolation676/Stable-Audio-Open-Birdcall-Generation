@@ -9,8 +9,14 @@ class_mapping.json
 todo.txt
 .idea/
 checkpoints/*
+!checkpoints/dataset.json
 !checkpoints/model_config.json
-!checkpoints/model_config_hybrid.json
+!checkpoints/model_config_baseline.json
+!checkpoints/model_config_specific.json
+!checkpoints/model_config_general.json
+!checkpoints/model_config_CA_specific.json
+!checkpoints/model_config_CA_general.json
+!checkpoints/model_config_no_prompt.json
 wandb/
 models/
 generations/

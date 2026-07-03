@@ -57,19 +57,19 @@
         },
         {
             "id": "seconds_total",
-            "type": "int",
+            "type": "number",
             "config": { "min_val": 0, "max_val": 512 }
         },
         {
             "id": "species_id",
-            "type": "int",
-            "config": { "min_val": 0, "max_val": 21 }
+            "type": "number",
+            "config": { "min_val": 0, "max_val": 20 }
         }
     ],
     "cond_dim": 768
 },
 "diffusion": {
-    "cross_attention_cond_ids": ["prompt"],
+    "cross_attention_cond_ids": ["prompt", "seconds_start", "seconds_total"],
     "global_cond_ids": ["seconds_start", "seconds_total", "species_id"],
     "type": "dit",
     "config": {
