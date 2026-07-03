@@ -12,10 +12,11 @@ checkpoints/*
 !checkpoints/model_config.json
 !checkpoints/model_config_hybrid.json
 wandb/
-runs/
+models/
 generations/
 venv_gen/*
 venv_birdnet/*
+imgs/
 
 # preset ignores
 # Byte-compiled / optimized / DLL files
