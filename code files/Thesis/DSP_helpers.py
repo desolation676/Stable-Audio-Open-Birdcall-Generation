@@ -51,13 +51,14 @@ def stft_power(mono, sr, n_fft=1024):
     return power, freqs, hop
 
 
-def band_energy(power, freqs, frame_start, frame_end, low, high):
-    if frame_end <= frame_start:
-        return 0.0
+def band_energy(power, freqs, frame_start, frame_end, low, high, q=0.9):
     band_mask = (freqs >= low) & (freqs <= high)
-    if not band_mask.any():
+    if frame_end <= frame_start or not band_mask.any():
         return 0.0
-    return power[band_mask, frame_start:frame_end].mean().item()
+    per_frame = power[band_mask, frame_start:frame_end].mean(dim=0)
+    if per_frame.numel() == 0:
+        return 0.0
+    return torch.quantile(per_frame, q).item()
 
 
 def db_margin(energy_a, energy_b):
@@ -67,3 +68,8 @@ def db_margin(energy_a, energy_b):
 def loudness_normalize(clip, target_rms=0.05):
     rms = clip.pow(2).mean().sqrt().clamp_min(1e-8)
     return (clip * (target_rms / rms)).clamp(-1.0, 1.0)
+
+def frames(e, sr, hop, n_frames):
+    fs = max(0, int(round(e["start_s"] * sr)) // hop)
+    fe = max(fs + 1, min(int(round(e["end_s"] * sr)) // hop, n_frames))
+    return fs, fe

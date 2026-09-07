@@ -75,15 +75,20 @@ class AudioPipeline(ABC):
         """
         Precomputes energies for extracted events
         """
+        # preprocess files and store preprocessed version
         waveform, meta, wav_path = self.preprocess_raw(path)
-        events = self.extract_events(path, waveform, meta)
+        # get all events, annotations for soundscapes, snippets for XC
+        # list of events for file, start time, end time, species + other info
+        events = self.extract_events(path)
         if not events:
             return []
 
+        # compute power for file
         power, freqs, hop = stft_power(waveform, self.target_sr, self.n_fft)
         n_samples = waveform.shape[-1]
         rows = []
 
+        # collects all important information, checks if gate is passed and deletes pow to free memory
         for i, e in enumerate(events):
             fs = max(0, int(round(e["start_s"] * self.target_sr)) // hop)
             fe = max(fs + 1, min(int(round(e["end_s"] * self.target_sr)) // hop,
@@ -129,37 +134,54 @@ class SoundscapePipeline(AudioPipeline):
     def extract_events(self, path):
         """Extract events from annotation df for one audio file"""
         return [{
-            "start_s": r["Start Time"],
-            "end_s": r["End Time"],
-            "low_hz": r["Low Freq"],
-            "high_hz": r["High Freq"],
+            "start_s": r["Start Time (s)"],
+            "end_s": r["End Time (s)"],
+            "low_hz": r["Low Freq (Hz)"],
+            "high_hz": r["High Freq (Hz)"],
             "species": r["Species eBird Code"],
         } for r in self.annotations.get(Path(path).name, [])]
 
     def gate(self, power, freqs, hop, e):
-        """ """
-        start = max(0, int(round(e["start_s"] * self.target_sr)))
-        end = int(round(e["end_s"] * self.target_sr))
-        frame_start = start // hop
-        frame_end = max(frame_start + 1, min(end // hop, power.shape[-1]))
-        if frame_end <= frame_start:
-            return False
+        if e["end_s"] - e["start_s"] < self.min_dur_s:
+            return False  # 0.00 s annotations exist in this CSV
 
+        # make band mask for freq range given in annotation
         band_mask = (freqs >= e["low_hz"]) & (freqs <= e["high_hz"])
         if not band_mask.any():
             return False
+        # convert it to frames
+        fs, fe = frames(e, self.target_sr, hop, power.shape[-1])
 
-        # call dominant during event
-        event_power = power[:, frame_start:frame_end] # event time whole freq
-        band_e = event_power[band_mask].mean().item() # event time and freq
-        other_e = event_power[~band_mask].mean().item() # event time everything but event freq
-        if db_margin(band_e, other_e) < self.dominance_margin_db:
+        # temporal SNR: this band now vs this band normally
+        profile = power[band_mask].mean(dim=0)  # (T,) whole file
+        # calc background noise of entire file using background_percentile of power
+        bg = torch.quantile(profile, self.background_percentile / 100).item()
+        # calc power above background percentile during event duration
+        ev = torch.quantile(profile[fs:fe], self.event_percentile / 100).item()
+        # check if event is louder than background noise
+        if db_margin(ev, bg) < self.snr_margin_db:
             return False
 
-        # call dominant compared to rest of file
-        file_band_profile = power[band_mask].mean(dim=0)
-        floor = torch.quantile(file_band_profile, self.floor_percentile / 100).item()
-        return band_e >= floor
+       # Spectral SNR: local spectral check
+        if self.local_margin_db is not None:
+            # calc bandwidth and nyquist limit
+            w = e["high_hz"] - e["low_hz"]
+            nyq = self.target_sr / 2
+            rivals = []
+            # fetch frequency bands below and above the given one
+            for lo, hi in ((e["low_hz"] - w, e["low_hz"]), (e["high_hz"], e["high_hz"] + w)):
+                if lo < 0 or hi > nyq:
+                    continue
+                m = (freqs >= lo) & (freqs <= hi)
+                # calc power for rival freq bands during event
+                if m.any():
+                    rivals.append(power[m, fs:fe].mean().item())
+            # check if mean event freq band power is bigger than max power of rival bands
+            if rivals and db_margin(power[band_mask, fs:fe].mean().item(),
+                                    max(rivals)) < self.local_margin_db:
+                return False
+
+        return True
 
     def gating_config(self):
         """ Add additional configs """
@@ -177,7 +199,7 @@ class XenoCantoPipeline(AudioPipeline):
     def extract_active_chips(self, waveform):
         raise NotImplementedError
 
-    def extract_events(self, path, waveform, meta):
+    def extract_events(self, path):
         raise NotImplementedError
 
     def gate(self, power, freqs, hop, event):
