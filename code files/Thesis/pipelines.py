@@ -116,12 +116,16 @@ class AudioPipeline(ABC):
 
 
 class SoundscapePipeline(AudioPipeline):
-    def __init__(self, annotations_csv, dominance_margin_db=3.0,
-                 floor_percentile=60, **kwargs):
+    def __init__(self, annotations_csv, snr_margin_db=3.0,
+                 background_percentile=25, event_percentile=90,
+                 min_dur_s=0.05, band_energy_q=0.9, **kwargs):
         super().__init__(**kwargs)
         self.annotations = self.load_annotations(annotations_csv)
-        self.dominance_margin_db = dominance_margin_db
-        self.floor_percentile = floor_percentile
+        self.snr_margin_db = snr_margin_db
+        self.background_percentile = background_percentile
+        self.event_percentile = event_percentile
+        self.min_dur_s = min_dur_s
+        self.band_energy_q = band_energy_q
 
     def load_annotations(self, annotations_csv):
         """Load annotations csv into df"""
@@ -161,33 +165,16 @@ class SoundscapePipeline(AudioPipeline):
         # check if event is louder than background noise
         if db_margin(ev, bg) < self.snr_margin_db:
             return False
-
-       # Spectral SNR: local spectral check
-        if self.local_margin_db is not None:
-            # calc bandwidth and nyquist limit
-            w = e["high_hz"] - e["low_hz"]
-            nyq = self.target_sr / 2
-            rivals = []
-            # fetch frequency bands below and above the given one
-            for lo, hi in ((e["low_hz"] - w, e["low_hz"]), (e["high_hz"], e["high_hz"] + w)):
-                if lo < 0 or hi > nyq:
-                    continue
-                m = (freqs >= lo) & (freqs <= hi)
-                # calc power for rival freq bands during event
-                if m.any():
-                    rivals.append(power[m, fs:fe].mean().item())
-            # check if mean event freq band power is bigger than max power of rival bands
-            if rivals and db_margin(power[band_mask, fs:fe].mean().item(),
-                                    max(rivals)) < self.local_margin_db:
-                return False
-
-        return True
+        else:
+            return True
 
     def gating_config(self):
-        """ Add additional configs """
         cfg = super().gating_config()
-        cfg.update(dominance_margin_db=self.dominance_margin_db,
-                   floor_percentile=self.floor_percentile)
+        cfg.update(snr_margin_db=self.snr_margin_db,
+                   background_percentile=self.background_percentile,
+                   event_percentile=self.event_percentile,
+                   min_dur_s=self.min_dur_s,
+                   band_energy_q=self.band_energy_q)
         return cfg
 
 

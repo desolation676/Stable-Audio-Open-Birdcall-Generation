@@ -85,8 +85,9 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--merge_parquets", nargs="+")
     ap.add_argument("--no-resume", action="store_true")
-    ap.add_argument("--dominance-margin-db", type=float, default=1.0)
-    ap.add_argument("--floor-percentile", type=float, default=20)
+    ap.add_argument("--snr_margin_db", type=float, default=3.0)
+    ap.add_argument("--min_dur_s", type=float, default=0.05)
+    ap.add_argument("--background_percentile", type=float, default=25)
     ap.add_argument("--limit", type=int, help="first N files, for calibration")
     args = ap.parse_args()
 
@@ -103,8 +104,9 @@ def main():
         pipe = SoundscapePipeline(
             annotations_csv=args.annotations,
             cache_dir=args.cache_dir,
-            dominance_margin_db=args.dominance_margin_db,
-            floor_percentile=args.floor_percentile,
+            snr_margin_db=args.snr_margin_db,
+            background_percentile=args.background_percentile,
+            min_dur_s=args.min_dur_s
         )
     else:
         pipe = XenoCantoPipeline(
