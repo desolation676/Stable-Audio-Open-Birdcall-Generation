@@ -3,13 +3,10 @@ import pandas as pd
 import json
 from torch.utils.data import Dataset
 from DSP_helpers import db_margin, loudness_normalize
+from pipelines import get_class_mapping
 import torch
 from scipy.io import wavfile
 
-def get_class_mapping(path):
-    with open(path, "r", encoding="utf-8") as file:
-        class_mappings = json.load(file)
-    return class_mappings
 
 
 class BirdDataset(Dataset):
@@ -62,21 +59,28 @@ class BirdDataset(Dataset):
             if r.empty or all(db_margin(a.band_energy, x) >= overlap_margin_db for x in r.band_energy):
                 keep.append(a.event_id)
         return anchors[anchors.event_id.isin(keep)]
-    
+
+    def start_range(self, a):
+        # int cause we only work with full samples
+        s = int(round(a.start_s * self.sr))
+        e =  int(round(a.end_s * self.sr))
+        # safe indexing
+        if getattr(a, "dataset", None) == "xc":
+            lo, hi = min(s, e - self.sample_size), max(s, e - self.sample_size)
+        else:
+            j = int(round(self.jitter * self.sr))
+            c = (s + e) // 2 - self.sample_size // 2
+            lo, hi = c - j, c + j
+        last = max(0, int(a.n_samples) - self.sample_size)
+        lo, hi = max(0, min(lo, last)), max(0, min(hi, last))
+        return lo, max(lo, hi)
     def __len__(self):
         return len(self.anchors)
 
     def __getitem__(self, idx):
         a =  self.anchors.iloc[idx]
-        mid = (a.start_s + a.end_s) / 2
-
-        if self.jitter:
-            mid += (torch.rand(1).item()  * 2 - 1) * self.jitter
-
-        # int cause we only work with full samples
-        start = int(round((mid - self.window_s /2) *  self.sr))
-        # safe indexing
-        start = max(0, min(start, max(0, a.n_samples - self.sample_size)))
+        lo, hi = self.start_range(a)
+        start = lo if hi <= lo else lo + int(torch.randint(0, hi - lo + 1, (1,)).item())
 
         _, data  = wavfile.read(a.wav_path, mmap=True)
         clip = torch.from_numpy(np.asarray(data[start:start + self.sample_size]).copy()).float()
@@ -96,7 +100,7 @@ class BirdDataset(Dataset):
 
         return {
             "audio": clip,
-            "species_id": self.class_mapping[a.species],
+            "species_id": self.class_mapping[a.species]["id"],
             "seconds_start": float(seconds_start),
             "seconds_total": float(a.n_samples / self.sr),
             "prompt": "A field recording of a bird singing in nature, stereo audio",

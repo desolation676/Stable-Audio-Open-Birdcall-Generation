@@ -77,9 +77,9 @@ def main():
 
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", choices=["soundscape", "xc"])
-    ap.add_argument("--audio-dir")
+    ap.add_argument("--audio-dir", nargs="+")
     ap.add_argument("--annotations")
-    ap.add_argument("--species-json", help="XC only: {filename: ebird_code}")
+    ap.add_argument("--class-mapping")
     ap.add_argument("--cache-dir", default="cache/")
     ap.add_argument("--glob", default="*.flac")
     ap.add_argument("--out", required=True)
@@ -88,14 +88,14 @@ def main():
     ap.add_argument("--snr_margin_db", type=float, default=3.0)
     ap.add_argument("--min_dur_s", type=float, default=0.05)
     ap.add_argument("--background_percentile", type=float, default=25)
-    ap.add_argument("--limit", type=int, help="first N files, for calibration")
+    ap.add_argument("--limit", type=int)
     args = ap.parse_args()
 
     if args.merge_parquets:
         merge_parquets(args.merge_parquets, args.out)
         return
 
-    paths = sorted(Path(args.audio_dir).glob(args.glob))
+    paths = sorted(p for d in args.audio_dir for p in Path(args.audio_dir).glob(args.glob))
     if args.limit:
         paths = paths[:args.limit]
     print(f"{len(paths)} files")
@@ -110,7 +110,7 @@ def main():
         )
     else:
         pipe = XenoCantoPipeline(
-            file_species=json.loads(Path(args.species_json).read_text()),
+            class_mapping=args.class_mapping,
             cache_dir=args.cache_dir,
         )
 

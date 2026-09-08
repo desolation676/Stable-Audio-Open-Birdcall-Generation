@@ -8,6 +8,10 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from DSP_helpers import *
 
+def get_class_mapping(path):
+    with open(path, "r", encoding="utf-8") as file:
+        class_mappings = json.load(file)
+    return class_mappings
 
 class AudioPipeline(ABC):
     def __init__(self, cache_dir, target_sr=44100, highpass_hz=200.0, n_fft=1024):
@@ -179,15 +183,52 @@ class SoundscapePipeline(AudioPipeline):
 
 
 class XenoCantoPipeline(AudioPipeline):
-    def __init__(self, file_species, **kwargs):
+    def __init__(self, class_mapping, min_dur_s=1.0, **kwargs):
         super().__init__(**kwargs)
-        self.file_species = file_species
-
-    def extract_active_chips(self, waveform):
-        raise NotImplementedError
+        self.class_mapping = get_class_mapping(class_mapping)
+        self.min_dur_s = min_dur_s
 
     def extract_events(self, path):
-        raise NotImplementedError
+        species = Path(path).parent.name
+        if sf.info(path).duration < self.min_dur_s:
+            return []
+        else:
+            return [{
+                "start_s": 0.0,
+                "end_s": None, #filled when file is read
+                "low_hz": 0.0,
+                "high_hz": self.target_sr /2,
+                "species": species,
+            }]
 
     def gate(self, power, freqs, hop, event):
-        raise NotImplementedError
+        # no gate for XC
+        return True
+
+    def  precompute_events(self, path):
+        events = self.extract_events(path)
+        waveform, meta, wav_path = self.preprocess_raw(path)
+        n_samples = int(waveform.shape[-1])
+
+        return [{
+            "event_id": f"{Path(path).stem}:{i}",
+            "wav_path": str(wav_path),
+            "source_path": str(path),
+            "n_samples": n_samples,
+            "start_s": 0.0,
+            "end_s": n_samples / self.target_sr,
+            "low_hz": float(e["low_hz"]),
+            "high_hz": float(e["high_hz"]),
+            "species": e["species"],
+            "band_energy": float("nan"),
+            "passes_gate": True,
+            "native_sr": meta.get("native_sr"),
+            "upsampled": meta.get("upsampled"),
+            "clip_ratio": meta.get("clip_ratio"),
+            "clipped": meta.get("clipped"),
+        } for i, e in enumerate(events)]
+
+    def  gating_config(self):
+        cfg = super().gating_config()
+        cfg.update(mode="whole_file", min_dur_s =self.min_dur_s)
+        return cfg
