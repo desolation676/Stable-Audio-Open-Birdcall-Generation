@@ -1,5 +1,5 @@
 # custom ignores
-data/
+/data/
 data_preprocessed/
 data_preprocessed_general/
 data_preprocessed_hybrid/

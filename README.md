@@ -137,7 +137,7 @@ The two corpora are unified behind one interface:
 ## Repository structure
 
 ```
-scr/PR/           Phase 1 — practical work
+src/PR/           Phase 1 — practical work
   data_exploration.ipynb     Corpus statistics
   data_preprocessing.ipynb   Preprocessing for the audio_dir loader
   model_setup.py             Model loading
@@ -147,7 +147,7 @@ scr/PR/           Phase 1 — practical work
 results.txt              Phase 1 — full per-species results, every configuration
 checkpoints/             Phase 1 — one model config per conditioning variant
 
-scr/Thesis/       Phase 2 — master's thesis
+src/Thesis/       Phase 2 — master's thesis
   DSP_helpers.py             Filtering, resampling, STFT power, band energy, dB margins
   pipelines.py               AudioPipeline ABC, SoundscapePipeline, XenoCantoPipeline
   build_samples.py           CLI: builds and merges Parquet event manifests
