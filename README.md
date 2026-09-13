@@ -11,7 +11,7 @@ This repository covers two consecutive pieces of work:
 | Status | Complete                                                | In progress                                        |
 | Topic  | Birdcall sample generation using per-species recordings | Multi species Birdcall soundscape generation       |
 | Data   | Xeno-Canto, plus additional data from Kaggle            | Annotated ARU soundscapes, unified with Xeno-Canto |
-| Code   | [`src/PR/`](code%20files/PR)                            | [`src/Thesis/`](code%20files/Thesis)               |
+| Code   | [`src/PR/`](src/PR)                            | [`src/Thesis/`](src/Thesis)               |
 
 Phase 1 established that species conditioning works, and how. Phase 2 moves from clean,
 single-species recordings to continuous field audio, where the events have to be found and
@@ -118,11 +118,11 @@ The two corpora are unified behind one interface:
 
 ## Pipeline
 
-**1. Decode and cache** — `pipelines.py: AudioPipeline.preprocess_raw`
+**1. Decode and cache** — [`pipelines.py: AudioPipeline.preprocess_raw`](src/Thesis/pipelines.py)
 
-**2. Event manifest with gating** — `build_samples.py`
+**2. Event manifest with gating** — [`build_samples.py`](src/Thesis/build_samples.py)
 
-**3. Dynamic windowing at training time  + Xeno Canto data** — `dataset.py: BirdDataset`
+**3. Dynamic windowing at training time  + Xeno Canto data** — [`dataset.py: BirdDataset`](src/Thesis/dataset.py)
 
 
 
@@ -137,7 +137,7 @@ The two corpora are unified behind one interface:
 ## Repository structure
 
 ```
-code files/PR/           Phase 1 — practical work
+scr/PR/           Phase 1 — practical work
   data_exploration.ipynb     Corpus statistics
   data_preprocessing.ipynb   Preprocessing for the audio_dir loader
   model_setup.py             Model loading
@@ -147,7 +147,7 @@ code files/PR/           Phase 1 — practical work
 results.txt              Phase 1 — full per-species results, every configuration
 checkpoints/             Phase 1 — one model config per conditioning variant
 
-code files/Thesis/       Phase 2 — master's thesis
+scr/Thesis/       Phase 2 — master's thesis
   DSP_helpers.py             Filtering, resampling, STFT power, band energy, dB margins
   pipelines.py               AudioPipeline ABC, SoundscapePipeline, XenoCantoPipeline
   build_samples.py           CLI: builds and merges Parquet event manifests
