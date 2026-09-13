@@ -23,7 +23,7 @@ generations/
 venv_gen/*
 venv_birdnet/*
 imgs/
-code files/Thesis/cache/*
+src/Thesis/cache/*
 
 # preset ignores
 # Byte-compiled / optimized / DLL files
