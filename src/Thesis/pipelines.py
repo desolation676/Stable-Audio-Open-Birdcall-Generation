@@ -14,10 +14,9 @@ def get_class_mapping(path):
     return class_mappings
 
 class AudioPipeline(ABC):
-    def __init__(self, cache_dir, target_sr=44100, highpass_hz=200.0, n_fft=1024):
+    def __init__(self, cache_dir, target_sr=44100, highpass_hz=200.0):
         self.target_sr = target_sr
         self.highpass_hz = highpass_hz
-        self.n_fft = n_fft
         self.save_dir = Path(cache_dir)
         self.save_dir.mkdir(parents=True, exist_ok=True)
 
@@ -62,70 +61,49 @@ class AudioPipeline(ABC):
         meta["cached"] = False
         return waveform, meta, wav_path
 
+    def row(self, path, wav_path, meta, n_samples, i, e, band_energy=float("nan"), passes_gate=True):
+        """
+        Row building for parquets. Passes gate default true for XC, same for band_energy
+        """
+        return {
+            "event_id": f"{Path(path).stem}:{i}",
+            "wav_path": str(wav_path),
+            "source_path": str(path),
+            "n_samples": int(n_samples),
+            "start_s": float(e["start_s"]),
+            "end_s": float(e["end_s"]),
+            "low_hz": float(e["low_hz"]),
+            "high_hz": float(e["high_hz"]),
+            "species": e["species"],
+            "band_energy": float(band_energy),
+            "passes_gate": bool(passes_gate),
+            "native_sr": meta.get("native_sr"),
+            "upsampled": meta.get("upsampled"),
+            "clip_ratio": meta.get("clip_ratio"),
+            "clipped": meta.get("clipped"),
+        }
     @abstractmethod
     def extract_events(self, path):
         """Preprocesses annotations into standardized events"""
 
-    @abstractmethod
-    def gate(self, power, freqs, hop, event):
-        """ Dominance gate, returns true or false"""
-
     def gating_config(self):
         """Records gate configs used"""
         return {"target_sr": self.target_sr, "highpass_hz": self.highpass_hz,
-                "n_fft": self.n_fft, "pipeline": type(self).__name__}
+                "pipeline": type(self).__name__}
 
+    @abstractmethod
     def precompute_events(self, path):
-        """
-        Precomputes energies for extracted events
-        """
-        # preprocess files and store preprocessed version
-        waveform, meta, wav_path = self.preprocess_raw(path)
-        # get all events, annotations for soundscapes, snippets for XC
-        # list of events for file, start time, end time, species + other info
-        events = self.extract_events(path)
-        if not events:
-            return []
-
-        # compute power for file
-        power, freqs, hop = stft_power(waveform, self.target_sr, self.n_fft)
-        n_samples = waveform.shape[-1]
-        rows = []
-
-        # collects all important information, checks if gate is passed and deletes pow to free memory
-        for i, e in enumerate(events):
-            fs = max(0, int(round(e["start_s"] * self.target_sr)) // hop)
-            fe = max(fs + 1, min(int(round(e["end_s"] * self.target_sr)) // hop,
-                                 power.shape[-1]))
-            rows.append({
-                "event_id": f"{Path(path).stem}:{i}",
-                "wav_path": str(wav_path),
-                "source_path": str(path),
-                "n_samples": int(n_samples),
-                "start_s": float(e["start_s"]),
-                "end_s": float(e["end_s"]),
-                "low_hz": float(e["low_hz"]),
-                "high_hz": float(e["high_hz"]),
-                "species": e["species"],
-                "band_energy": band_energy(power, freqs, fs, fe, e["low_hz"], e["high_hz"]),
-                "passes_gate": bool(self.gate(power, freqs, hop, e)),
-                "native_sr": meta.get("native_sr"),
-                "upsampled": meta.get("upsampled"),
-                "clip_ratio": meta.get("clip_ratio"),
-                "clipped": meta.get("clipped"),
-            })
-
-        del power
-        return rows
+        """Compute rows and build them with self.row()"""
 
 
 class SoundscapePipeline(AudioPipeline):
-    def __init__(self, annotations_csv, snr_margin_db=3.0,
+    def __init__(self, annotations_csv, n_fft=1024, snr_margin_db=3.0,
                  background_percentile=25, event_percentile=90,
                  min_dur_s=0.05, band_energy_q=0.9, **kwargs):
         super().__init__(**kwargs)
         self.annotations = self.load_annotations(annotations_csv)
         self.snr_margin_db = snr_margin_db
+        self.n_fft = n_fft
         self.background_percentile = background_percentile
         self.event_percentile = event_percentile
         self.min_dur_s = min_dur_s
@@ -172,9 +150,41 @@ class SoundscapePipeline(AudioPipeline):
         else:
             return True
 
+    def precompute_events(self, path):
+        """
+        Precomputes energies for extracted events
+        """
+        # get all events, annotations for soundscapes, snippets for XC
+        # list of events for file, start time, end time, species + other info
+        events = self.extract_events(path)
+        if not events:
+            return []
+
+        # preprocess files and store preprocessed version
+        waveform, meta, wav_path = self.preprocess_raw(path)
+
+        # compute power for file
+        power, freqs, hop = stft_power(waveform, self.target_sr, self.n_fft)
+        n_samples = waveform.shape[-1]
+        rows = []
+
+        # collects all important information, checks if gate is passed and deletes pow to free memory
+        for i, e in enumerate(events):
+            fs = max(0, int(round(e["start_s"] * self.target_sr)) // hop)
+            fe = max(fs + 1, min(int(round(e["end_s"] * self.target_sr)) // hop,
+                                 power.shape[-1]))
+            rows.append(self.row(path, wav_path, meta, n_samples, i, e,
+                                 band_energy = band_energy(power, freqs, fs, fe, e["low_hz"], e["high_hz"], q=self.band_energy_q),
+                                 passes_gate=self.gate(power, freqs, hop, e))
+            )
+
+        del power
+        return rows
+
     def gating_config(self):
         cfg = super().gating_config()
-        cfg.update(snr_margin_db=self.snr_margin_db,
+        cfg.update(n_fft=self.n_fft,
+                   snr_margin_db=self.snr_margin_db,
                    background_percentile=self.background_percentile,
                    event_percentile=self.event_percentile,
                    min_dur_s=self.min_dur_s,
@@ -201,32 +211,19 @@ class XenoCantoPipeline(AudioPipeline):
                 "species": species,
             }]
 
-    def gate(self, power, freqs, hop, event):
-        # no gate for XC
-        return True
-
     def  precompute_events(self, path):
         events = self.extract_events(path)
+        if not events:
+            return []
+
         waveform, meta, wav_path = self.preprocess_raw(path)
         n_samples = int(waveform.shape[-1])
 
-        return [{
-            "event_id": f"{Path(path).stem}:{i}",
-            "wav_path": str(wav_path),
-            "source_path": str(path),
-            "n_samples": n_samples,
-            "start_s": 0.0,
-            "end_s": n_samples / self.target_sr,
-            "low_hz": float(e["low_hz"]),
-            "high_hz": float(e["high_hz"]),
-            "species": e["species"],
-            "band_energy": float("nan"),
-            "passes_gate": True,
-            "native_sr": meta.get("native_sr"),
-            "upsampled": meta.get("upsampled"),
-            "clip_ratio": meta.get("clip_ratio"),
-            "clipped": meta.get("clipped"),
-        } for i, e in enumerate(events)]
+        rows = []
+        for i, e in enumerate(events):
+            e  = {**e, "end_s": n_samples / self.target_sr}
+            rows.append(self.row(path, wav_path, meta, n_samples, i, e))
+        return rows
 
     def  gating_config(self):
         cfg = super().gating_config()

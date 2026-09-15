@@ -51,11 +51,12 @@ def build_dataset_parquets(pipeline, source_paths, out_path, dataset, resume=Tru
     cfg["cfg_hash"] = cfg_hash
     out_path.with_suffix(".config.json").write_text(json.dumps(cfg, indent=2))
 
-    # check gate configuration
+    # check gate configuration only for soundscape
+
     n_pass = int(df.passes_gate.sum()) if len(df) else 0
     print(f"\n{len(df)} events, {n_pass} pass the gate "
           f"({n_pass / max(len(df), 1):.1%}), {df.species.nunique() if len(df) else 0} species")
-    if len(df) and not 0.05 < n_pass / len(df) < 0.95:
+    if dataset == "soundscape" and len(df) and not 0.05 < n_pass / len(df) < 0.95:
         print("  WARNING: gate is near-degenerate -- calibrate the thresholds")
     return df
 
@@ -95,7 +96,9 @@ def main():
         merge_parquets(args.merge_parquets, args.out)
         return
 
-    paths = sorted(p for d in args.audio_dir for p in Path(args.audio_dir).glob(args.glob))
+    EXTS = {".mp3", ".wav", ".flac"}
+    paths = sorted(p for d in args.audio_dir for p in Path(d).rglob("*") if p.is_file() and p.suffix.lower() in EXTS)
+
     if args.limit:
         paths = paths[:args.limit]
     print(f"{len(paths)} files")

@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
-import json
 from torch.utils.data import Dataset
 from DSP_helpers import db_margin, loudness_normalize
 from pipelines import get_class_mapping
 import torch
 from scipy.io import wavfile
+import math
 
 
 
@@ -22,6 +22,7 @@ class BirdDataset(Dataset):
 
         df = pd.read_parquet(parquet_path)
         # rival = same file different species event but all events for now
+        # rivals dont exist for XC as they are all separate files. No extra handling needed
         self.rivals_by_file = {k: v for k, v in df.groupby("wav_path")}
 
         anchors = df[df.passes_gate & df.species.isin(self.class_mapping)]
@@ -31,6 +32,22 @@ class BirdDataset(Dataset):
         anchors = self.veto_overlaps(anchors, overlap_margin_db)
         print(f"veto:   {len(anchors)}")
         self.anchors = anchors.reset_index(drop=True)
+
+    def start_range(self, a):
+        # int cause we only work with full samples
+        s = int(round(a.start_s * self.sr))
+        e =  int(round(a.end_s * self.sr))
+
+        # safe indexing
+        if getattr(a, "dataset", None) == "xc":
+            lo, hi = min(s, e - self.sample_size), max(s, e - self.sample_size)
+        else:
+            j = int(round(self.jitter * self.sr))
+            c = (s + e) // 2 - self.sample_size // 2
+            lo, hi = c - j, c + j
+        last = max(0, int(a.n_samples) - self.sample_size)
+        lo, hi = max(0, min(lo, last)), max(0, min(hi, last))
+        return lo, max(lo, hi)
 
     def dedup(self, anchors):
         """Combine overlapping or back to back events of same species into (sample sized) window"""
@@ -47,9 +64,9 @@ class BirdDataset(Dataset):
         """Checks overlapping events of different species """
         keep = []
         for _, a in anchors.iterrows():
-            mid = (a.start_s + a.end_s) / 2
-            window_start = mid - self.window_s / 2 - self.jitter
-            window_end = mid + self.window_s / 2 + self.jitter
+            lo, hi = self.start_range(a)
+            window_start = lo / self.sr
+            window_end = (hi + self.sample_size) / self.sr
 
             r = self.rivals_by_file[a.wav_path]
             # not same event, not same species, rival not finished before window start, rival starts during active window
@@ -60,20 +77,6 @@ class BirdDataset(Dataset):
                 keep.append(a.event_id)
         return anchors[anchors.event_id.isin(keep)]
 
-    def start_range(self, a):
-        # int cause we only work with full samples
-        s = int(round(a.start_s * self.sr))
-        e =  int(round(a.end_s * self.sr))
-        # safe indexing
-        if getattr(a, "dataset", None) == "xc":
-            lo, hi = min(s, e - self.sample_size), max(s, e - self.sample_size)
-        else:
-            j = int(round(self.jitter * self.sr))
-            c = (s + e) // 2 - self.sample_size // 2
-            lo, hi = c - j, c + j
-        last = max(0, int(a.n_samples) - self.sample_size)
-        lo, hi = max(0, min(lo, last)), max(0, min(hi, last))
-        return lo, max(lo, hi)
     def __len__(self):
         return len(self.anchors)
 
@@ -84,27 +87,34 @@ class BirdDataset(Dataset):
 
         _, data  = wavfile.read(a.wav_path, mmap=True)
         clip = torch.from_numpy(np.asarray(data[start:start + self.sample_size]).copy()).float()
+        # normalize loudness before pad
+        clip = loudness_normalize(clip)
         # check size, pad with 0
-        if clip.numel() < self.sample_size:
-            clip = torch.nn.functional.pad(clip, (0, self.sample_size - clip.numel()))
+        n_real = clip.numel()
+        if n_real  < self.sample_size:
+            clip = torch.nn.functional.pad(clip, (0, self.sample_size - n_real))
+
+        # padding mask shows which samples are real and which are padding for training wrapper
+        padding_mask = torch.ones(self.sample_size)
+        padding_mask[n_real:] = 0.0
+
         clip = clip.unsqueeze(0)
 
         # convert to stereo
         if self.target_channels > 1:
             clip = clip.repeat(self.target_channels, 1)
 
-        clip = loudness_normalize(clip)
+
         assert clip.shape[-1] == self.sample_size
         # todo consider other second start option
-        seconds_start = start / self.sr
 
         return {
             "audio": clip,
             "species_id": self.class_mapping[a.species]["id"],
-            "seconds_start": float(seconds_start),
-            "seconds_total": float(a.n_samples / self.sr),
+            "seconds_start": math.floor(start / self.sr),
+            "seconds_total": math.ceil(a.n_samples / self.sr),
+            "padding_mask": [padding_mask],
             "prompt": "A field recording of a bird singing in nature, stereo audio",
             "event_id": a.event_id,
         }
 
-    #  todo train test split
