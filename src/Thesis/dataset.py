@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, WeightedRandomSampler
 from DSP_helpers import db_margin, loudness_normalize
 from pipelines import get_class_mapping
 import torch
@@ -107,9 +107,8 @@ class BirdDataset(Dataset):
 
         assert clip.shape[-1] == self.sample_size
         # todo consider other second start option
-
-        return {
-            "audio": clip,
+        # expects tuple
+        return clip, {
             "species_id": self.class_mapping[a.species]["id"],
             "seconds_start": math.floor(start / self.sr),
             "seconds_total": math.ceil(a.n_samples / self.sr),
@@ -118,3 +117,9 @@ class BirdDataset(Dataset):
             "event_id": a.event_id,
         }
 
+def species_sampler(ds, alpha=0.5):
+    """Wrapper for balanced WeightedRandomSampler, alpha defines aggressiveness"""
+    counts = ds.anchors.species.value_counts()
+    w = ds.anchors.species.map(lambda s: counts[s] ** -alpha).to_numpy()
+    return WeightedRandomSampler(torch.as_tensor(w, dtype=torch.double),
+                                 num_samples=len(ds), replacement=True)
