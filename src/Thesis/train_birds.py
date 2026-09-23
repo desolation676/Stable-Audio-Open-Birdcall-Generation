@@ -57,9 +57,6 @@ def main():
     with open(args.model_config) as f:
         model_config = json.load(f)
 
-    with open(args.dataset_config) as f:
-        dataset_config = json.load(f)
-
     # NEW initialize custom DS and DL here
 
     train_ds = BirdDataset(
