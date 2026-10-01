@@ -10,8 +10,8 @@ import math
 
 
 class BirdDataset(Dataset):
-    def __init__(self, parquet_path, class_mapping_path, sample_size=524288, target_sr=44100, target_channels=2
-                 , jitter=0.0, overlap_margin_db=3.0):
+    def __init__(self, parquet_path, class_mapping_path, split="train", sample_size=524288, target_sr=44100, target_channels=2
+                 , jitter=3.0, overlap_margin_db=3.0):
         self.sr = target_sr
         self.sample_size = sample_size
         self.target_channels = target_channels
@@ -19,18 +19,23 @@ class BirdDataset(Dataset):
         self.class_mapping = get_class_mapping(class_mapping_path)
         self.window_s = sample_size / target_sr
         self.jitter = jitter
+        self.split = split
 
         df = pd.read_parquet(parquet_path)
+        assert "split" in df.columns, "Run merge with split first"
         # rival = same file different species event but all events for now
         # rivals dont exist for XC as they are all separate files. No extra handling needed
         self.rivals_by_file = {k: v for k, v in df.groupby("wav_path")}
 
-        anchors = df[df.passes_gate & df.species.isin(self.class_mapping)]
-        print(f"gate:   {len(anchors)}")
+        anchors = df[(df.split == split) & df.passes_gate & df.species.isin(self.class_mapping)]
+        self.counts = {"split": int((df.split == split).sum()), "gate": len(anchors)}
+
         anchors = self.dedup(anchors)
-        print(f"dedup:  {len(anchors)}")
+        self.counts["dedup"] = len(anchors)
         anchors = self.veto_overlaps(anchors, overlap_margin_db)
-        print(f"veto:   {len(anchors)}")
+        self.counts["veto"] = len(anchors)
+        print(f"[{split}] " + " ".join(f"{k}: {v}" for k,v in self.counts.items()))
+
         self.anchors = anchors.reset_index(drop=True)
 
     def start_range(self, a):
@@ -39,10 +44,12 @@ class BirdDataset(Dataset):
         e =  int(round(a.end_s * self.sr))
 
         # safe indexing
-        if getattr(a, "dataset", None) == "xc":
+        if a.dataset == "xc":
             lo, hi = min(s, e - self.sample_size), max(s, e - self.sample_size)
         else:
             j = int(round(self.jitter * self.sr))
+            slack = max(0, (self.sample_size - (e - s)) // 2)
+            j = min(j, slack)
             c = (s + e) // 2 - self.sample_size // 2
             lo, hi = c - j, c + j
         last = max(0, int(a.n_samples) - self.sample_size)
@@ -87,8 +94,7 @@ class BirdDataset(Dataset):
 
         _, data  = wavfile.read(a.wav_path, mmap=True)
         clip = torch.from_numpy(np.asarray(data[start:start + self.sample_size]).copy()).float()
-        # normalize loudness before pad
-        clip = loudness_normalize(clip)
+
         # check size, pad with 0
         n_real = clip.numel()
         if n_real  < self.sample_size:
@@ -110,16 +116,17 @@ class BirdDataset(Dataset):
         # expects tuple
         return clip, {
             "species_id": self.class_mapping[a.species]["id"],
-            "seconds_start": math.floor(start / self.sr),
-            "seconds_total": math.ceil(a.n_samples / self.sr),
+            "seconds_start": 0,
+            "seconds_total": math.ceil(n_real),
             "padding_mask": [padding_mask],
             "prompt": "A field recording of a bird singing in nature, stereo audio",
             "event_id": a.event_id,
         }
 
-def species_sampler(ds, alpha=0.5):
+def species_sampler(ds, alpha=0.5, seed=None):
     """Wrapper for balanced WeightedRandomSampler, alpha defines aggressiveness"""
     counts = ds.anchors.species.value_counts()
     w = ds.anchors.species.map(lambda s: counts[s] ** -alpha).to_numpy()
+    gen = torch.Generator().manual_seed(seed) if seed is not None else None
     return WeightedRandomSampler(torch.as_tensor(w, dtype=torch.double),
-                                 num_samples=len(ds), replacement=True)
+                                 num_samples=len(ds), replacement=True, generator=gen)

@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pandas as pd
 from tqdm import tqdm
+from sklearn.model_selection import StratifiedGroupKFold
+from tinytag import TinyTag
 
 from pipelines import SoundscapePipeline, XenoCantoPipeline
 
@@ -60,13 +62,52 @@ def build_dataset_parquets(pipeline, source_paths, out_path, dataset, resume=Tru
         print("  WARNING: gate is near-degenerate -- calibrate the thresholds")
     return df
 
+def file_group(src, dataset):
+    # group ss by files and xc by author
+    if dataset == "soundscape":
+        return f"ss:{Path(src).stem}"
+    try:
+        rec = (TinyTag.get(src).artist or "").strip().lower()
+    except Exception:
+        rec = ""
+    return f"xc_rec:{rec}" if rec else f"xc_file:{Path(src).stem}"
 
-def merge_parquets(shard_paths, out_path):
+def make_split(df, seed=0, n_splits=20, test_folds=(0,1), val_folds=(2,)):
+    # fold 0 and 1 = 10% test, fold 2 = 5% val
+    # get most frequent species per file, important for ss
+    files = (df.groupby(["source_path", "dataset"]).species.agg(lambda s: s.value_counts().index[0]).reset_index())
+    files["group"] = [file_group(s, d) for s,d in zip(files.source_path, files.dataset)]
+    files["split"] = "train"
+
+    # calculate folds dataset independent
+    for _, part in files.groupby("dataset"):
+        sgkf = StratifiedGroupKFold(n_splits=n_splits, shuffle=True, random_state=seed)
+        # split equally across species and artists/files
+        for k, (_, idx) in enumerate(sgkf.split(part, part.species, part.group)):
+            if k in test_folds:
+                files.loc[part.index[idx], "split"] = "test"
+            elif k in val_folds:
+                files.loc[part.index[idx], "split"] = "val"
+    return files[["source_path", "group", "split"]]
+def merge_parquets(shard_paths, out_path, split_path, seed=0):
     # read parquets from each dataset and merge them into one for the dataloader
     df = pd.concat([pd.read_parquet(p) for p in shard_paths], ignore_index=True)
     dupes = int(df.event_id.duplicated().sum())
     assert dupes == 0, f"{dupes} duplicate event_ids across shards"
 
+    split_path = Path(split_path)
+    if split_path.exists():
+        split = pd.read_csv(split_path)
+        print(f"Using existing split: {split_path}")
+    else:
+        split = make_split(df, seed)
+        split_path.parent.mkdir(parents=True, exist_ok=True)
+        split.to_csv(split_path, index=False)
+        print(f"Split saved at {split_path}")
+
+    df = df.merge(split, on="source_path", how="left", validate="many_to_one")
+    assert df.split.notna().all(), "files missing from split"
+    print(pd.crosstab([df.dataset, df.species,], df.split))
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(out_path)
@@ -90,6 +131,7 @@ def main():
     ap.add_argument("--min_dur_s", type=float, default=0.05)
     ap.add_argument("--background_percentile", type=float, default=25)
     ap.add_argument("--limit", type=int)
+    ap.add_argument("--split-file splits/split_v1.csv")
     args = ap.parse_args()
 
     if args.merge_parquets:
