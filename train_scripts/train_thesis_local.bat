@@ -9,6 +9,7 @@ py -3.10 src/thesis/train_birds.py ^
   --sampler-alpha 0.5 ^
   --name test_01 ^
   --save-dir checkpoints ^
+  --pretrained-ckpt-path checkpoints/model.safetensors ^
   --batch-size 1 ^
   --num-workers 1 ^
   --checkpoint-every 1000 ^

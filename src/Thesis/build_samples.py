@@ -74,7 +74,7 @@ def file_group(src, dataset):
 
 def make_split(df, seed=0, n_splits=20, test_folds=(0,1), val_folds=(2,)):
     # fold 0 and 1 = 10% test, fold 2 = 5% val
-    # get most frequent species per file, important for ss
+    # one row per source file, assign group
     files = (df.groupby(["source_path", "dataset"]).species.agg(lambda s: s.value_counts().index[0]).reset_index())
     files["group"] = [file_group(s, d) for s,d in zip(files.source_path, files.dataset)]
     files["split"] = "train"

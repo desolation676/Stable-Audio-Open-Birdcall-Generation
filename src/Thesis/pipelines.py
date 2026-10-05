@@ -38,6 +38,7 @@ class AudioPipeline(ABC):
         return self.save_dir / f"{stem}.wav", self.save_dir / f"{stem}.meta.json"
 
     def native_sr_pass(self, path):
+        # skip files below 32 khz
         sr = sf.info(path).samplerate
         if sr < self.min_native_sr:
             self.skipped["low_native_sr"].append(str(path))
@@ -59,13 +60,16 @@ class AudioPipeline(ABC):
             meta["cached"] = True
             return waveform, meta, wav_path
 
+        #decode
         data, sr = sf.read(path, dtype="float32", always_2d=True)
 
         raw = torch.from_numpy(data).t()
+        # clip
         clipped, clip_ratio = detect_clipping(raw)
-
+        # mono, dc removal, highpass
         waveform = remove_dc_offset(to_mono(raw))
         waveform = highpass(waveform, sr, self.highpass_hz)
+        # resample -> 32 khz -> 44.1 khz
         waveform = band_limit(waveform,  sr, self.bandlimit_sr, self.target_sr)
         waveform, gain_db = peak_normalize(waveform, self.peak_dbfs)
 
@@ -131,6 +135,7 @@ class SoundscapePipeline(AudioPipeline):
                  min_dur_s=0.05, band_energy_q=0.9, n_null=100, seed=0, **kwargs):
         super().__init__(**kwargs)
         self.annotations = self.load_annotations(annotations_csv)
+        #  allowed false-pass rate, None = no gate
         self.gate_alpha = gate_threshold
         self.n_fft = n_fft
         self.background_percentile = background_percentile
@@ -161,7 +166,7 @@ class SoundscapePipeline(AudioPipeline):
     def gate(self, power, freqs, hop, e, busy_cs, generator):
         nan = float("nan")
 
-        # 0.00 s annotations exist in this CSV
+        # skip events below min duration
         if e["end_s"] - e["start_s"] < self.min_dur_s:
             return False, nan, nan
 
@@ -169,13 +174,14 @@ class SoundscapePipeline(AudioPipeline):
         band_mask = (freqs >= e["low_hz"]) & (freqs <= e["high_hz"])
         if not band_mask.any():
             return False, nan, nan
+        # mean power per frame inside band over whole file
         profile = power[band_mask].mean(dim=0)
 
         # convert it to frames
         n_frames = power.shape[-1]
         fs, fe = frames(e, self.target_sr, hop, n_frames)
 
-        # temporal SNR: this band now vs this band normally, whole file
+        # temporal SNR: this band now vs this band normally,
         # calc background noise of entire file using background_percentile of power
         bg = torch.quantile(profile, self.background_percentile / 100).item()
         # calc power above background percentile during event duration
@@ -186,6 +192,7 @@ class SoundscapePipeline(AudioPipeline):
             return True, snr_db, nan
 
         # check same band but no annotations
+        # get starts, pick free windows and calc snr
         starts = free_starts(busy_cs, fe-fs, n_frames)
         null = null_snr(profile, bg, starts, fe-fs, self.n_null,  self.event_percentile / 100, generator)
 
@@ -211,6 +218,7 @@ class SoundscapePipeline(AudioPipeline):
 
         # compute power for file + background bins
         power, freqs, hop = stft_power(waveform, self.target_sr, self.n_fft)
+        # too many elems for torch.percentile
         bg_bins  = torch.from_numpy(np.percentile(power.cpu().numpy(), self.background_percentile, axis=1)).to(power.dtype)
         n_samples, n_frames = waveform.shape[-1], power.shape[-1]
         rows = []

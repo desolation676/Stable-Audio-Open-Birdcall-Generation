@@ -26,7 +26,7 @@ class BirdDataset(Dataset):
         # rival = same file different species event but all events for now
         # rivals dont exist for XC as they are all separate files. No extra handling needed
         self.rivals_by_file = {k: v for k, v in df.groupby("wav_path")}
-
+        # only rows of current split become anchors, but overlap is still checked for cross contamination
         anchors = df[(df.split == split) & df.passes_gate & df.species.isin(self.class_mapping)]
         self.counts = {"split": int((df.split == split).sum()), "gate": len(anchors)}
 
@@ -112,7 +112,6 @@ class BirdDataset(Dataset):
 
 
         assert clip.shape[-1] == self.sample_size
-        # todo consider other second start option
         # expects tuple
         return clip, {
             "species_id": self.class_mapping[a.species]["id"],

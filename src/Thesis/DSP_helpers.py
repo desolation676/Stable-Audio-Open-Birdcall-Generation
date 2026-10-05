@@ -31,6 +31,7 @@ def highpass(waveform, sr, cutoff_freq=200.0):
 
 
 def band_limit(waveform, sr, bandlimit_sr=32000, target_sr=44100):
+    # resample everything to 32 khz (soundscape native) and then 44.1 khz.
     params = dict(lowpass_filter_width=64, rolloff=0.95,
               resampling_method="sinc_interp_kaiser", beta=14.77)
     if sr != bandlimit_sr:
@@ -38,6 +39,7 @@ def band_limit(waveform, sr, bandlimit_sr=32000, target_sr=44100):
     return F.resample(waveform, bandlimit_sr, target_sr, **params)
 
 def peak_normalize(waveform, peak_dbfs=-1.0):
+    # scales whole file so loudest sample is at -1 dbfs
     peak = waveform.abs().max().clamp_min(1e-8)
     gain = 10 ** (peak_dbfs / 20) / peak
     return waveform * gain, 20 * math.log10(gain.item())
@@ -68,6 +70,7 @@ def band_energy(power, freqs, frame_start, frame_end, low, high, q=0.9):
     return torch.quantile(per_frame, q).item()
 
 def call_energy(power, freqs, bg_bins, frame_start, frame_end, low, high):
+    # subtract background and clip negative value + sum
     band_mask = (freqs >= low) & (freqs <= high)
     if frame_end <= frame_start or not band_mask.any():
         return 0.0
@@ -88,21 +91,24 @@ def frames(e, sr, hop, n_frames):
     return fs, fe
 
 def free_starts(busy_cs, length, n_frames):
-    # All start frames s where [s, s+length) overlaps no annotation
+    # All start frames s where s + event length overlaps no annotation
     if length >= n_frames:
         return torch.empty(0, dtype=torch.long)
     starts = torch.arange(0, n_frames - length + 1)
     return starts[(busy_cs[starts + length] - busy_cs[starts]) == 0]
 
 def null_snr(profile, bg, starts, length, n, q=0.9, generator=None):
+    # draw n windows with free positions
     if len(starts) == 0 or n <= 0:
         return torch.empty(0)
     pick = starts[torch.randint(len(starts), (n,), generator=generator)]
+    # unfold gives view without copy
     windows = profile.unfold(0, length, 1)[pick]
     ev = torch.quantile(windows, q, dim=1)
     return 10.0 * torch.log10(ev.clamp_min(1e-12) / max(bg, 1e-12))
 
 def annotated_cumsum(spans, n_frames):
+    #  mask which frames are covered by annotation and return prefix sum
     busy = torch.zeros(n_frames, dtype=torch.long)
     for fs, fe in spans:
         busy[fs:fe] = 1
