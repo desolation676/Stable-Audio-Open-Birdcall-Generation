@@ -117,7 +117,7 @@ class BirdDataset(Dataset):
         return clip, {
             "species_id": self.class_mapping[a.species]["id"],
             "seconds_start": 0,
-            "seconds_total": math.ceil(n_real),
+            "seconds_total": math.ceil(n_real /self.sr),
             "padding_mask": [padding_mask],
             "prompt": "A field recording of a bird singing in nature, stereo audio",
             "event_id": a.event_id,

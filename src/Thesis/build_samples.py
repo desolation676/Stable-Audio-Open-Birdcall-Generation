@@ -127,15 +127,15 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--merge_parquets", nargs="+")
     ap.add_argument("--no-resume", action="store_true")
-    ap.add_argument("--snr_margin_db", type=float, default=3.0)
+    ap.add_argument("--gate-threshold", type=float, default=None)
     ap.add_argument("--min_dur_s", type=float, default=0.05)
     ap.add_argument("--background_percentile", type=float, default=25)
     ap.add_argument("--limit", type=int)
-    ap.add_argument("--split-file splits/split_v1.csv")
+    ap.add_argument("--split-file", default="splits/split_v1.csv")
     args = ap.parse_args()
 
     if args.merge_parquets:
-        merge_parquets(args.merge_parquets, args.out)
+        merge_parquets(args.merge_parquets, args.split_file, args.out)
         return
 
     EXTS = {".mp3", ".wav", ".flac"}
@@ -149,7 +149,7 @@ def main():
         pipe = SoundscapePipeline(
             annotations_csv=args.annotations,
             cache_dir=args.cache_dir,
-            snr_margin_db=args.snr_margin_db,
+            gate_threshold=args.gate_threshold,
             background_percentile=args.background_percentile,
             min_dur_s=args.min_dur_s
         )
@@ -160,6 +160,7 @@ def main():
         )
 
     build_dataset_parquets(pipe, paths, args.out, args.dataset, resume=not args.no_resume)
-
+    for reason, files in pipe.skipped.items():
+        print(f"skipped ({reason}): {len(files)}")
 if __name__ == "__main__":
     main()

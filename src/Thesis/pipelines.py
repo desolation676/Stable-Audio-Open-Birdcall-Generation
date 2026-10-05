@@ -1,3 +1,4 @@
+import hashlib
 import json
 import torch
 import pandas as pd
@@ -14,20 +15,35 @@ def get_class_mapping(path):
     return class_mappings
 
 class AudioPipeline(ABC):
-    def __init__(self, cache_dir, target_sr=44100, highpass_hz=200.0):
+    def __init__(self, cache_dir, target_sr=44100, highpass_hz=200.0, bandlimit_sr=32000, min_native_sr=32000, peak_dbfs = -1.0):
         self.target_sr = target_sr
         self.highpass_hz = highpass_hz
+        self.bandlimit_sr = bandlimit_sr
+        self.min_native_sr = min_native_sr
+        self.peak_dbfs = peak_dbfs
+
         self.save_dir = Path(cache_dir)
         self.save_dir.mkdir(parents=True, exist_ok=True)
+        self.skipped = {"low_native_sr": [], "too_short": []}
 
     def _save_params(self):
         """Returns custom name for saved file including preprocessing params"""
-        return f"sr{self.target_sr}_hp{self.highpass_hz:g}_mono"
+        #todo add all params
+        return (f"sr{self.target_sr}_hp{self.highpass_hz:g}_bl{self.bandlimit_sr}"
+                f"_pk{self.peak_dbfs:g}_mono_v2")
 
     def _save_paths(self, path):
         """Returns save path for wav and json file"""
         stem = f"{Path(path).stem}_{self._save_params()}"
         return self.save_dir / f"{stem}.wav", self.save_dir / f"{stem}.meta.json"
+
+    def native_sr_pass(self, path):
+        sr = sf.info(path).samplerate
+        if sr < self.min_native_sr:
+            self.skipped["low_native_sr"].append(str(path))
+            return False
+        return True
+
 
     def preprocess_raw(self, path):
         """
@@ -44,16 +60,22 @@ class AudioPipeline(ABC):
             return waveform, meta, wav_path
 
         data, sr = sf.read(path, dtype="float32", always_2d=True)
-        waveform = to_mono(torch.from_numpy(data).t())
-        waveform = remove_dc_offset(waveform)
-        clipped, clip_ratio = detect_clipping(waveform)
+
+        raw = torch.from_numpy(data).t()
+        clipped, clip_ratio = detect_clipping(raw)
+
+        waveform = remove_dc_offset(to_mono(raw))
         waveform = highpass(waveform, sr, self.highpass_hz)
-        waveform = resample(waveform, sr, self.target_sr)
+        waveform = band_limit(waveform,  sr, self.bandlimit_sr, self.target_sr)
+        waveform, gain_db = peak_normalize(waveform, self.peak_dbfs)
 
         wavfile.write(wav_path, self.target_sr, waveform.numpy().astype(np.float32))
         meta = {
             "native_sr": sr,
+            "n_channels": int(raw.shape[0]),
             "upsampled": sr < self.target_sr,
+            "bandwidth_hz": self.bandlimit_sr / 2,
+            "gain_db": gain_db,
             "clip_ratio": clip_ratio,
             "clipped": bool(clipped),
         }
@@ -61,7 +83,8 @@ class AudioPipeline(ABC):
         meta["cached"] = False
         return waveform, meta, wav_path
 
-    def row(self, path, wav_path, meta, n_samples, i, e, band_energy=float("nan"), passes_gate=True):
+    def row(self, path, wav_path, meta, n_samples, i, e, band_energy=float("nan"), call_energy=float("nan"),
+            passes_gate=True,  snr_db=float("nan"), gate_p=float("nan")):
         """
         Row building for parquets. Passes gate default true for XC, same for band_energy
         """
@@ -76,9 +99,15 @@ class AudioPipeline(ABC):
             "high_hz": float(e["high_hz"]),
             "species": e["species"],
             "band_energy": float(band_energy),
+            "call_energy": float(call_energy),
             "passes_gate": bool(passes_gate),
+            "snr_db": float(snr_db),
+            "gate_p":  float(gate_p),
             "native_sr": meta.get("native_sr"),
+            "n_channels": meta.get("n_channels"),
             "upsampled": meta.get("upsampled"),
+            "bandwidth_hz": meta.get("bandwidth_hz"),
+            "gain_db": meta.get("gain_db"),
             "clip_ratio": meta.get("clip_ratio"),
             "clipped": meta.get("clipped"),
         }
@@ -97,17 +126,19 @@ class AudioPipeline(ABC):
 
 
 class SoundscapePipeline(AudioPipeline):
-    def __init__(self, annotations_csv, n_fft=1024, snr_margin_db=3.0,
+    def __init__(self, annotations_csv, n_fft=1024, gate_threshold=None,
                  background_percentile=25, event_percentile=90,
-                 min_dur_s=0.05, band_energy_q=0.9, **kwargs):
+                 min_dur_s=0.05, band_energy_q=0.9, n_null=100, seed=0, **kwargs):
         super().__init__(**kwargs)
         self.annotations = self.load_annotations(annotations_csv)
-        self.snr_margin_db = snr_margin_db
+        self.gate_alpha = gate_threshold
         self.n_fft = n_fft
         self.background_percentile = background_percentile
         self.event_percentile = event_percentile
         self.min_dur_s = min_dur_s
         self.band_energy_q = band_energy_q
+        self.seed = seed
+        self.n_null = n_null
 
     def load_annotations(self, annotations_csv):
         """Load annotations csv into df"""
@@ -127,29 +158,43 @@ class SoundscapePipeline(AudioPipeline):
             "species": r["Species eBird Code"],
         } for r in self.annotations.get(Path(path).name, [])]
 
-    def gate(self, power, freqs, hop, e):
+    def gate(self, power, freqs, hop, e, busy_cs, generator):
+        nan = float("nan")
+
+        # 0.00 s annotations exist in this CSV
         if e["end_s"] - e["start_s"] < self.min_dur_s:
-            return False  # 0.00 s annotations exist in this CSV
+            return False, nan, nan
 
         # make band mask for freq range given in annotation
         band_mask = (freqs >= e["low_hz"]) & (freqs <= e["high_hz"])
         if not band_mask.any():
-            return False
-        # convert it to frames
-        fs, fe = frames(e, self.target_sr, hop, power.shape[-1])
+            return False, nan, nan
+        profile = power[band_mask].mean(dim=0)
 
-        # temporal SNR: this band now vs this band normally
-        profile = power[band_mask].mean(dim=0)  # (T,) whole file
+        # convert it to frames
+        n_frames = power.shape[-1]
+        fs, fe = frames(e, self.target_sr, hop, n_frames)
+
+        # temporal SNR: this band now vs this band normally, whole file
         # calc background noise of entire file using background_percentile of power
         bg = torch.quantile(profile, self.background_percentile / 100).item()
         # calc power above background percentile during event duration
         ev = torch.quantile(profile[fs:fe], self.event_percentile / 100).item()
-        # check if event is louder than background noise
-        if db_margin(ev, bg) < self.snr_margin_db:
-            return False
-        else:
-            return True
+        snr_db = db_margin(ev, bg)
 
+        if self.gate_alpha is None:
+            return True, snr_db, nan
+
+        # check same band but no annotations
+        starts = free_starts(busy_cs, fe-fs, n_frames)
+        null = null_snr(profile, bg, starts, fe-fs, self.n_null,  self.event_percentile / 100, generator)
+
+        #  No annotation free positions available
+        if len(null) == 0:
+            return True, snr_db, nan
+
+        p_value = (1 + int((null >= snr_db).sum())) / (1 + len(null))
+        return p_value <=  self.gate_alpha, snr_db, p_value
     def precompute_events(self, path):
         """
         Precomputes energies for extracted events
@@ -157,25 +202,32 @@ class SoundscapePipeline(AudioPipeline):
         # get all events, annotations for soundscapes, snippets for XC
         # list of events for file, start time, end time, species + other info
         events = self.extract_events(path)
-        if not events:
+        # drop empty files or files with sr < 32000
+        if not events or not self.native_sr_pass(path):
             return []
 
         # preprocess files and store preprocessed version
         waveform, meta, wav_path = self.preprocess_raw(path)
 
-        # compute power for file
+        # compute power for file + background bins
         power, freqs, hop = stft_power(waveform, self.target_sr, self.n_fft)
-        n_samples = waveform.shape[-1]
+        bg_bins  = torch.from_numpy(np.percentile(power.cpu().numpy(), self.background_percentile, axis=1)).to(power.dtype)
+        n_samples, n_frames = waveform.shape[-1], power.shape[-1]
         rows = []
+
+        # frames covered by annotations
+        busy_cs = annotated_cumsum([frames(e, self.target_sr, hop, n_frames) for e in events], n_frames)
+        seed = int(hashlib.md5(f"{self.seed}:{Path(path).name}".encode()).hexdigest()[:8], 16)
+        generator = torch.Generator().manual_seed(seed)
 
         # collects all important information, checks if gate is passed and deletes pow to free memory
         for i, e in enumerate(events):
-            fs = max(0, int(round(e["start_s"] * self.target_sr)) // hop)
-            fe = max(fs + 1, min(int(round(e["end_s"] * self.target_sr)) // hop,
-                                 power.shape[-1]))
+            fs, fe = frames(e, self.target_sr, hop, n_frames)
+            passes, snr_db, p_value = self.gate(power, freqs, hop,  e, busy_cs, generator)
             rows.append(self.row(path, wav_path, meta, n_samples, i, e,
                                  band_energy = band_energy(power, freqs, fs, fe, e["low_hz"], e["high_hz"], q=self.band_energy_q),
-                                 passes_gate=self.gate(power, freqs, hop, e))
+                                 call_energy=call_energy(power, freqs, bg_bins, fs, fe, e["low_hz"], e["high_hz"]),
+                                 passes_gate=passes, snr_db=snr_db, gate_p=p_value)
             )
 
         del power
@@ -184,7 +236,8 @@ class SoundscapePipeline(AudioPipeline):
     def gating_config(self):
         cfg = super().gating_config()
         cfg.update(n_fft=self.n_fft,
-                   snr_margin_db=self.snr_margin_db,
+                   gate_alpha=self.gate_alpha,
+                   seed=self.seed,
                    background_percentile=self.background_percentile,
                    event_percentile=self.event_percentile,
                    min_dur_s=self.min_dur_s,
@@ -201,13 +254,14 @@ class XenoCantoPipeline(AudioPipeline):
     def extract_events(self, path):
         species = Path(path).parent.name
         if sf.info(path).duration < self.min_dur_s:
+            self.skipped["too_short"].append(str(path))
             return []
         else:
             return [{
                 "start_s": 0.0,
                 "end_s": None, #filled when file is read
                 "low_hz": 0.0,
-                "high_hz": self.target_sr /2,
+                "high_hz": self.bandlimit_sr /2,
                 "species": species,
             }]
 
