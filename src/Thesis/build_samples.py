@@ -135,7 +135,7 @@ def main():
     args = ap.parse_args()
 
     if args.merge_parquets:
-        merge_parquets(args.merge_parquets, args.split_file, args.out)
+        merge_parquets(args.merge_parquets, args.out, args.split_file)
         return
 
     EXTS = {".mp3", ".wav", ".flac"}

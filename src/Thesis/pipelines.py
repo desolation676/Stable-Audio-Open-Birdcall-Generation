@@ -275,7 +275,7 @@ class XenoCantoPipeline(AudioPipeline):
 
     def  precompute_events(self, path):
         events = self.extract_events(path)
-        if not events:
+        if not events or not self.native_sr_pass(path):
             return []
 
         waveform, meta, wav_path = self.preprocess_raw(path)

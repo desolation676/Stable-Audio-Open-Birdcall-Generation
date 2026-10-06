@@ -11,7 +11,7 @@ import math
 
 class BirdDataset(Dataset):
     def __init__(self, parquet_path, class_mapping_path, split="train", sample_size=524288, target_sr=44100, target_channels=2
-                 , jitter=3.0, overlap_margin_db=3.0):
+                 , jitter=3.0, overlap_margin_db=3.0, random_crop=True):
         self.sr = target_sr
         self.sample_size = sample_size
         self.target_channels = target_channels
@@ -20,6 +20,7 @@ class BirdDataset(Dataset):
         self.window_s = sample_size / target_sr
         self.jitter = jitter
         self.split = split
+        self.random_crop = random_crop
 
         df = pd.read_parquet(parquet_path)
         assert "split" in df.columns, "Run merge with split first"
@@ -80,7 +81,7 @@ class BirdDataset(Dataset):
             r = r[(r.event_id != a.event_id) & (r.species != a.species)
                   & (r.end_s > window_start) & (r.start_s < window_end)]
             # check if anchor is  higher energy as all rivals on band
-            if r.empty or all(db_margin(a.band_energy, x) >= overlap_margin_db for x in r.band_energy):
+            if r.empty or all(db_margin(a.call_energy, x) >= overlap_margin_db for x in r.call_energy):
                 keep.append(a.event_id)
         return anchors[anchors.event_id.isin(keep)]
 
@@ -90,7 +91,13 @@ class BirdDataset(Dataset):
     def __getitem__(self, idx):
         a =  self.anchors.iloc[idx]
         lo, hi = self.start_range(a)
-        start = lo if hi <= lo else lo + int(torch.randint(0, hi - lo + 1, (1,)).item())
+
+        if hi <= lo:
+            start = lo
+        elif self.random_crop:
+            start = lo + int(torch.randint(0, hi - lo + 1, (1,)).item())
+        else:
+            start = (lo + hi) //2
 
         _, data  = wavfile.read(a.wav_path, mmap=True)
         clip = torch.from_numpy(np.asarray(data[start:start + self.sample_size]).copy()).float()

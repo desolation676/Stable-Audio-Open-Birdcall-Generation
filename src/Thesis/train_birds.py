@@ -17,6 +17,8 @@ from torch.utils.data import DataLoader
 from stable_audio_tools.data.dataset import collation_fn
 """
 MODIFIED train.py from https://github.com/stability-ai/stable-audio-tools to work for BirdDataset
+
+Splits: train -> optimisation,  val -> validation loss during training, test -> for final eval
 """
 class ExceptionCallback(pl.Callback):
     def on_exception(self, trainer, module, err):
@@ -24,13 +26,41 @@ class ExceptionCallback(pl.Callback):
 
 
 class ModelConfigEmbedderCallback(pl.Callback):
-    def __init__(self, model_config):
+    def __init__(self, model_config,  class_mapping):
         self.model_config = model_config
+        self.class_mapping = class_mapping
 
     def on_save_checkpoint(self, trainer, pl_module, checkpoint):
         checkpoint["model_config"] = self.model_config
+        checkpoint["class_mapping"] = self.class_mapping
 
+class FixValidationNoise(pl.Callback):
+    # Fix diffusion noise during val loop to ensure consistency
+    def __init__(self, seed=0):
+        self.seed = seed
+        self._cpu_state, self._cuda_state = None, None
 
+    def on_validation_epoch_start(self, trainer, pl_module):
+        self._cpu_state = torch.get_rng_state()
+        self._cuda_state = torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None
+        # each gpu gets unique seed
+        torch.manual_seed(self.seed + trainer.global_rank)
+    def on_validation_epoch_end(self, trainer, pl_module):
+        torch.set_rng_state(self._cpu_state)
+        if self._cuda_state is not None:
+            torch.cuda.set_rng_state_all(self._cuda_state)
+
+def make_loader(ds, args, sampler=None, shuffle=False, drop_last=False):
+    return DataLoader(ds,
+                      batch_size=args.batch_size,
+                      sampler=sampler,
+                      shuffle=shuffle if sampler is None else False,
+                      num_workers=args.num_workers,
+                      collate_fn=collation_fn,
+                      persistent_workers=args.num_workers > 0,
+                      pin_memory=True,
+                      drop_last=drop_last
+                      )
 def main():
     torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -39,8 +69,10 @@ def main():
     bird_parser.add_argument('--parquet-path', required=True)
     bird_parser.add_argument('--class-mapping-path', required=True)
     bird_parser.add_argument('--sampler-alpha', type=float, default=0.5)
-    bird_parser.add_argument('--jitter', type=float, default=0.0)
+    bird_parser.add_argument('--jitter', type=float, default=3.0)
     bird_parser.add_argument('--overlap-margin-db', type=float, default=3.0)
+    bird_parser.add_argument('--no-val', action='store_true')
+    bird_parser.add_argument('--val-seed', type=int, default=0)
     bird_args, remaining_argv = bird_parser.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining_argv
 
@@ -57,40 +89,48 @@ def main():
     with open(args.model_config) as f:
         model_config = json.load(f)
 
+    with open(bird_args.class_mapping_path,  encoding="utf-8") as f:
+        class_mapping = json.load(f)
+
     # NEW initialize custom DS and DL here
 
-    train_ds = BirdDataset(
+    ds_kwargs = dict(
         parquet_path=bird_args.parquet_path,
         class_mapping_path=bird_args.class_mapping_path,
         sample_size=model_config["sample_size"],
         target_sr=model_config["sample_rate"],
         target_channels=model_config.get("audio_channels", 2),
         jitter=bird_args.jitter,
-        overlap_margin_db=bird_args.overlap_margin_db,
-    )
-    train_dl = DataLoader(
-        train_ds,
-        batch_size=args.batch_size,
-        sampler=species_sampler(train_ds, alpha=bird_args.sampler_alpha),
-        num_workers=args.num_workers,
-        collate_fn=collation_fn,
-        persistent_workers=True,
-        pin_memory=True,
-        drop_last=True,
-    )
+        overlap_margin_db=bird_args.overlap_margin_db)
+
+    # train
+    train_ds = BirdDataset(split="train", random_crop=True, **ds_kwargs)
+    train_dl = make_loader(train_ds, args, sampler=species_sampler(train_ds, alpha=bird_args.sampler_alpha,  seed=seed),
+                           drop_last=True)
+
+    # val
+    val_ds, val_dl = None, None
+    if not bird_args.no_val:
+        val_ds = BirdDataset(split="val", random_crop=False, **ds_kwargs)
+        val_dl = make_loader(val_ds, args, shuffle=False, drop_last=False)
 
     # replaces dataset_config.json
     dataset_config = {
         "dataset_type": "bird_pipeline",
         "parquet_path": bird_args.parquet_path,
         "class_mapping_path": bird_args.class_mapping_path,
+        "class_mapping": class_mapping,
         "sampler_alpha": bird_args.sampler_alpha,
         "jitter": bird_args.jitter,
         "overlap_margin_db": bird_args.overlap_margin_db,
+        "train_counts": train_ds.counts,
+        "train_species": train_ds.anchors.species.value_counts().to_dict()
     }
 
-    val_dl = None
     val_dataset_config = None
+    if val_ds is not None:
+        val_dataset_config = {"split": "val", "random_crop":False, "val_seed": bird_args.val_seed,
+                              "counts": val_ds.counts, "species": val_ds.anchors.species.value_counts().to_dict()}
 
     model = create_model_from_config(model_config)
 
@@ -131,12 +171,18 @@ def main():
 
     ckpt_callback = pl.callbacks.ModelCheckpoint(every_n_train_steps=args.checkpoint_every, dirpath=checkpoint_dir,
                                                  save_top_k=-1)
-    save_model_config_callback = ModelConfigEmbedderCallback(model_config)
+    save_model_config_callback = ModelConfigEmbedderCallback(model_config, class_mapping)
+
 
     if args.val_dataset_config:
         demo_callback = create_demo_callback_from_config(model_config, demo_dl=val_dl)
     else:
         demo_callback = create_demo_callback_from_config(model_config, demo_dl=train_dl)
+
+    callbacks = [ckpt_callback, demo_callback, exc_callback, save_model_config_callback]
+
+    if val_dl is not None:
+        callbacks.append(FixValidationNoise(seed=bird_args.val_seed))
 
     # Combine args and config dicts
     args_dict = vars(args)
@@ -180,7 +226,7 @@ def main():
         strategy=strategy,
         precision=args.precision,
         accumulate_grad_batches=args.accum_batches,
-        callbacks=[ckpt_callback, demo_callback, exc_callback, save_model_config_callback],
+        callbacks=callbacks,
         logger=logger,
         log_every_n_steps=1,
         max_epochs=10000000,
