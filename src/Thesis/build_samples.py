@@ -12,54 +12,29 @@ from tinytag import TinyTag
 from pipelines import SoundscapePipeline, XenoCantoPipeline
 
 
-def build_dataset_parquets(pipeline, source_paths, out_path, dataset, resume=True):
+def build_dataset_parquets(pipeline, source_paths, out_path, dataset):
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # get the gate config
-    cfg = pipeline.gating_config()
-    cfg["dataset"] = dataset
-    # hashed configs to filter out rows from prev runs
-    cfg_hash = hashlib.md5(json.dumps(cfg, sort_keys=True).encode()).hexdigest()
-
-    rows, done = [], set()
-    # check if it was already computed
-    if resume and out_path.exists():
-        prev = pd.read_parquet(out_path)
-        wanted = {str(p) for p in source_paths}
-        prev = prev[prev.source_path.isin(wanted) & (prev.cfg_hash == cfg_hash)]
-        rows = prev.to_dict(orient="records")
-        done = set(prev.source_path)
-        print(f"resuming: {len(done)} files already current")
-
-    # else precompute events for all files and append information to list
+    rows = []
     for path in tqdm(source_paths, desc=dataset):
-        if str(path) in done:
-            continue
         try:
             for r in pipeline.precompute_events(path):
                 r["dataset"] = dataset
-                r["cfg_hash"] = cfg_hash
                 r["event_id"] = f"{dataset}/{r['event_id']}"
                 rows.append(r)
         except Exception as exc:
             print(f"  SKIP {Path(path).name}: {type(exc).__name__}: {exc}")
 
-    # save as parquet
     df = pd.DataFrame(rows)
     df.to_parquet(out_path)
 
-    # save config json
-    cfg["cfg_hash"] = cfg_hash
+    # record of the settings that produced this manifest
+    cfg = {**pipeline.gating_config(), "dataset": dataset}
     out_path.with_suffix(".config.json").write_text(json.dumps(cfg, indent=2))
 
-    # check gate configuration only for soundscape
-
     n_pass = int(df.passes_gate.sum()) if len(df) else 0
-    print(f"\n{len(df)} events, {n_pass} pass the gate "
-          f"({n_pass / max(len(df), 1):.1%}), {df.species.nunique() if len(df) else 0} species")
-    if dataset == "soundscape" and len(df) and not 0.05 < n_pass / len(df) < 0.95:
-        print("  WARNING: gate is near-degenerate -- calibrate the thresholds")
+    print(f"\n{len(df)} events, {n_pass} pass the gate, {df.species.nunique() if len(df) else 0} species")
     return df
 
 def file_group(src, dataset):
@@ -72,7 +47,7 @@ def file_group(src, dataset):
         rec = ""
     return f"xc_rec:{rec}" if rec else f"xc_file:{Path(src).stem}"
 
-def make_split(df, seed=0, n_splits=20, test_folds=(0,1), val_folds=(2,)):
+def make_split(df, seed=0, n_splits=10, test_folds=(0,), val_folds=(1,)):
     # fold 0 and 1 = 10% test, fold 2 = 5% val
     # one row per source file, assign group
     files = (df.groupby(["source_path", "dataset"]).species.agg(lambda s: s.value_counts().index[0]).reset_index())
@@ -126,7 +101,6 @@ def main():
     ap.add_argument("--glob", default="*.flac")
     ap.add_argument("--out", required=True)
     ap.add_argument("--merge_parquets", nargs="+")
-    ap.add_argument("--no-resume", action="store_true")
     ap.add_argument("--gate-threshold", type=float, default=None)
     ap.add_argument("--min_dur_s", type=float, default=0.05)
     ap.add_argument("--background_percentile", type=float, default=25)
@@ -159,7 +133,7 @@ def main():
             cache_dir=args.cache_dir,
         )
 
-    build_dataset_parquets(pipe, paths, args.out, args.dataset, resume=not args.no_resume)
+    build_dataset_parquets(pipe, paths, args.out, args.dataset)
     for reason, files in pipe.skipped.items():
         print(f"skipped ({reason}): {len(files)}")
 if __name__ == "__main__":

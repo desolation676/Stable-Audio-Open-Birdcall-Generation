@@ -73,6 +73,7 @@ def main():
     bird_parser.add_argument('--overlap-margin-db', type=float, default=3.0)
     bird_parser.add_argument('--no-val', action='store_true')
     bird_parser.add_argument('--val-seed', type=int, default=0)
+    bird_parser.add_argument('--cache-dir', default=None)
     bird_args, remaining_argv = bird_parser.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining_argv
 
@@ -101,7 +102,8 @@ def main():
         target_sr=model_config["sample_rate"],
         target_channels=model_config.get("audio_channels", 2),
         jitter=bird_args.jitter,
-        overlap_margin_db=bird_args.overlap_margin_db)
+        overlap_margin_db=bird_args.overlap_margin_db,
+        cache_dir = bird_args.cache_dir)
 
     # train
     train_ds = BirdDataset(split="train", random_crop=True, **ds_kwargs)

@@ -6,12 +6,13 @@ from pipelines import get_class_mapping
 import torch
 from scipy.io import wavfile
 import math
+from pathlib import Path, PureWindowsPath
 
 
 
 class BirdDataset(Dataset):
     def __init__(self, parquet_path, class_mapping_path, split="train", sample_size=524288, target_sr=44100, target_channels=2
-                 , jitter=3.0, overlap_margin_db=3.0, random_crop=True):
+                 , jitter=3.0, overlap_margin_db=3.0, random_crop=True, cache_dir=None):
         self.sr = target_sr
         self.sample_size = sample_size
         self.target_channels = target_channels
@@ -24,6 +25,10 @@ class BirdDataset(Dataset):
 
         df = pd.read_parquet(parquet_path)
         assert "split" in df.columns, "Run merge with split first"
+
+        # for training on linux but cache from windows
+        if cache_dir is not None:
+            df["wav_path"] = df.wav_path.map(lambda p: str(Path(cache_dir) / PureWindowsPath(p).name))
         # rival = same file different species event but all events for now
         # rivals dont exist for XC as they are all separate files. No extra handling needed
         self.rivals_by_file = {k: v for k, v in df.groupby("wav_path")}

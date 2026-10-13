@@ -121,7 +121,8 @@ class AudioPipeline(ABC):
 
     def gating_config(self):
         """Records gate configs used"""
-        return {"target_sr": self.target_sr, "highpass_hz": self.highpass_hz,
+        return {"target_sr": self.target_sr, "highpass_hz": self.highpass_hz, "bandlimit_sr": self.bandlimit_sr,
+                "min_native_sr": self.min_native_sr, "peak_dbfs": self.peak_dbfs,
                 "pipeline": type(self).__name__}
 
     @abstractmethod
