@@ -24,7 +24,10 @@ venv_gen/*
 venv_birdnet/*
 imgs/
 src/Thesis/cache/*
-
+data_thesis/*
+!data_thesis/manifests
+crops/*
+reference/*
 # preset ignores
 # Byte-compiled / optimized / DLL files
 __pycache__/

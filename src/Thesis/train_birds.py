@@ -74,8 +74,12 @@ def main():
     bird_parser.add_argument('--no-val', action='store_true')
     bird_parser.add_argument('--val-seed', type=int, default=0)
     bird_parser.add_argument('--cache-dir', default=None)
+    bird_parser.add_argument('--gate-alpha', default="manifest")
     bird_args, remaining_argv = bird_parser.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining_argv
+
+    ga = str(bird_args.gate_alpha).lower()
+    bird_args.gate_alpha = "manifest" if ga == "manifest" else (None if ga == "none" else float(ga))
 
     args = get_all_args()
     seed = args.seed
@@ -103,7 +107,9 @@ def main():
         target_channels=model_config.get("audio_channels", 2),
         jitter=bird_args.jitter,
         overlap_margin_db=bird_args.overlap_margin_db,
-        cache_dir = bird_args.cache_dir)
+        cache_dir = bird_args.cache_dir,
+        gate_alpha=bird_args.gate_alpha
+    )
 
     # train
     train_ds = BirdDataset(split="train", random_crop=True, **ds_kwargs)
@@ -113,7 +119,7 @@ def main():
     # val
     val_ds, val_dl = None, None
     if not bird_args.no_val:
-        val_ds = BirdDataset(split="val", random_crop=False, **ds_kwargs)
+        val_ds = BirdDataset(split="val", random_crop=False, **{**ds_kwargs, "gate_alpha": "manifest"})
         val_dl = make_loader(val_ds, args, shuffle=False, drop_last=False)
 
     # replaces dataset_config.json
@@ -193,7 +199,7 @@ def main():
     args_dict.update({"val_dataset_config": val_dataset_config})
 
     if args.logger == 'wandb':
-        push_wandb_config(logger, args_dict)
+        logger.experiment.config.update(args_dict, allow_val_change=True)
     elif args.logger == 'comet':
         logger.log_hyperparams(args_dict)
 

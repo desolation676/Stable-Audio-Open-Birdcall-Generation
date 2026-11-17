@@ -12,7 +12,7 @@ from pathlib import Path, PureWindowsPath
 
 class BirdDataset(Dataset):
     def __init__(self, parquet_path, class_mapping_path, split="train", sample_size=524288, target_sr=44100, target_channels=2
-                 , jitter=3.0, overlap_margin_db=3.0, random_crop=True, cache_dir=None):
+                 , jitter=3.0, overlap_margin_db=3.0, random_crop=True, cache_dir=None, gate_alpha="manifest"):
         self.sr = target_sr
         self.sample_size = sample_size
         self.target_channels = target_channels
@@ -33,7 +33,14 @@ class BirdDataset(Dataset):
         # rivals dont exist for XC as they are all separate files. No extra handling needed
         self.rivals_by_file = {k: v for k, v in df.groupby("wav_path")}
         # only rows of current split become anchors, but overlap is still checked for cross contamination
-        anchors = df[(df.split == split) & df.passes_gate & df.species.isin(self.class_mapping)]
+        xc_rows = df.dataset == "xc"
+        if gate_alpha == "manifest":
+            keep = df.passes_gate
+        elif gate_alpha is None:
+            keep = xc_rows | df.snr_db.notna()
+        else:
+            keep = xc_rows | (df.snr_db.notna() & (df.gate_p.isna() | (df.gate_p <= gate_alpha)))
+        anchors = df[(df.split == split) & keep & df.species.isin(self.class_mapping)]
         self.counts = {"split": int((df.split == split).sum()), "gate": len(anchors)}
 
         anchors = self.dedup(anchors)
