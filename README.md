@@ -128,12 +128,12 @@ The two corpora are unified behind one interface:
 
 ## Evaluation
  
-- **BirdNET accuracy** — same procedure as Phase 1, 30 clips per species. Generation seeds
+- **BirdNET accuracy:** Same procedure as Phase 1, 30 clips per species. Generation seeds
   are fixed and shared across all models, so every comparison is paired.
-- **FAD** — VGGish embeddings, computed against the held-out **val** windows instead of
+- **FAD:** VGGish embeddings, computed against the held-out **val** windows instead of
   the training data, with real and generated clips peak-normalised identically. The floor is
   the FAD between two halves of the val set.
-- **Real reference** — the val windows themselves score 83.4% (species macro average;
+- **Real reference:** The val windows themselves score 83.4% (species macro average;
   87.1% per clip). Generated clips are balanced per species, so the macro value is the
   comparable one.
 
