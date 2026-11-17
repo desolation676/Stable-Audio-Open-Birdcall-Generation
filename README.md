@@ -122,17 +122,45 @@ The two corpora are unified behind one interface:
 
 **2. Event manifest with gating** — [`build_samples.py`](src/Thesis/build_samples.py)
 
-**3. Dynamic windowing at training time  + Xeno Canto data** — [`dataset.py: BirdDataset`](src/Thesis/dataset.py)
+**3. Frozen stratified grouped split** — [`build_samples.py`](src/Thesis/build_samples.py)
 
+**4. Dynamic windowing at training time  + Xeno Canto data** — [`dataset.py: BirdDataset`](src/Thesis/dataset.py)
 
+## Evaluation
+ 
+- **BirdNET accuracy** — same procedure as Phase 1, 30 clips per species. Generation seeds
+  are fixed and shared across all models, so every comparison is paired.
+- **FAD** — VGGish embeddings, computed against the held-out **val** windows instead of
+  the training data, with real and generated clips peak-normalised identically. The floor is
+  the FAD between two halves of the val set.
+- **Real reference** — the val windows themselves score 83.4% (species macro average;
+  87.1% per clip). Generated clips are balanced per species, so the macro value is the
+  comparable one.
 
-## Usage
+> **Note:** Phase 1 FAD values are included for completeness but are invalid due to an embedding bug in `frechet_audio_distance` 0.3.4. Phase 2 computes FAD correctly.
+ 
+BirdNET accuracy (%), with FAD in parentheses. Gate rows at 10k are mean ± SD over three
+seeds.
+ 
+| Model | Steps | CFG 3 | CFG 6 | CFG 9 |
+|---|---|---|---|---|
+| **Real val windows** | — | | 83.4 (floor 0.51) | |
+| Gate (3 seeds) | 10000 | 77.7 ± 0.6 (2.83 ± 0.08) | 88.5 ± 0.5 (3.61 ± 0.08) | 90.0 ± 0.4 (4.08 ± 0.19) |
+| No gate (seed 0) | 10000 | 78.4 (2.71) | 88.9 (3.31) | 89.8 (3.81) |
+| Gate (seed 2) | 16000 | 86.2 (2.87) | **92.7** (3.80) | 92.2 (4.28) |
 
+### Discussion
+ 
+**Results are stable across seeds.** Three independent training runs land within half a
+percentage point of each other, and within ~0.1 FAD. Per-species values still swing by tens
+of points between runs, so single-run species differences are mostly noise.
 ...
 
 ## Open points
 
-...
+- Downstream utility -> BirdNet fine-tune
+- Training Length
+- Domain Conditioning
 
 ## Repository structure
 
@@ -152,7 +180,12 @@ src/Thesis/       Phase 2 — master's thesis
   pipelines.py               AudioPipeline ABC, SoundscapePipeline, XenoCantoPipeline
   build_samples.py           CLI: builds and merges Parquet event manifests
   dataset.py                 BirdDataset: dedup, overlap veto, dynamic windowing
+  train_birds.py             Training entry point (stable-audio-tools + BirdDataset)
+  export_split.py            Exports val/test windows as the held-out reference
+  birdnet_crops.py           3 s crops for the downstream classifier
+  birdnet_embedd_train.py    BirdNET-embedding classifier, learning curve
 
+splits/                  Frozen train/val/test split
 class_mappings/          Species code to class index mappings
 train_scripts/           Training launchers (local and RunPod)
 stable-audio-tools/      Vendored copy of the Stability AI training framework
