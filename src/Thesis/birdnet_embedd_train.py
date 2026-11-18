@@ -15,7 +15,7 @@ from sklearn.preprocessing import StandardScaler
 from birdnetlib.analyzer import Analyzer
 from birdnetlib import RecordingBuffer
 
-KS = [44, 88, 16, 32, "all"]
+KS = [4, 8, 16, 32, "all"]
 synth_all = 100
 synth_ratios = [1, 2]
 re = 5
@@ -130,7 +130,7 @@ def train_classifier(X, y, X_val, y_val):
     for c in c_values:
         model = make_pipeline(StandardScaler(),
                               LogisticRegression(C=c, max_iter=2000, class_weight="balanced"))
-        model.fit(X,y)
+        model.fit(X, y)
         f1 = f1_score(y_val, model.predict(X_val), average="macro")
         if f1 > best_f1:
             best_f1, best_C, best_model = f1, c, model
@@ -138,9 +138,75 @@ def train_classifier(X, y, X_val, y_val):
     return best_model, best_C
 
 
- def score(model, X, y):
-     pred = model.predict(X)
-     return {"macro_f1": f1_score(y, pred, average="macro"),
+def score(model, X, y):
+    pred = model.predict(X)
+    return {"macro_f1": f1_score(y, pred, average="macro"),
             "balanced_acc": float(np.mean([np.mean(pred[y == c] == c) for c in np.unique(y)]))}
 
-# todo finish
+
+def run(args):
+    crops = Path(args.crops)
+    train, train_emb = load_folder(crops / "real" / "train")
+    val, val_emb = load_folder(crops / "real" / "val")
+    val_y = val.species.to_numpy()
+
+    if args.final:
+        test, test_emb = load_folder(crops / "real" / "test")
+        eval_name, eval_X, eval_y = "test", test_emb, test.species.to_numpy()
+    else:
+        eval_name, eval_X, eval_y = "val", val_emb, val_y
+
+    synth_sets = {name: load_folder(crops / "synth" / name) for name in args.synth}
+    ks = [k if k == "all" else int(k) for k in args.ks]
+    results = []
+
+    for k in ks:
+        for repeat in range(re):
+            rng = np.random.default_rng(1000 * repeat + (0 if k == "all" else k))
+            for ts in build_training_sets(k, rng, train, train_emb, synth_sets):
+                model, c = train_classifier(ts["X"], ts["y"], val_emb, val_y)
+                s = score(model, eval_X, eval_y)
+                results.append({"k": k, "repeat": repeat, "condition": ts["condition"],
+                                "synth_set": ts["synth_set"], "n_train": len(ts["y"]), "C": c,
+                                f"{eval_name}_macro_f1": s["macro_f1"],
+                                f"{eval_name}_balanced_acc": s["balanced_acc"]})
+
+                print(f"k={str(k):>3}  repeat={repeat}  {ts['condition']:18s} {ts['synth_set']:40s} "
+                      f"n={len(ts['y']):5d}  {eval_name} macro F1 = {s['macro_f1']:.3f}", flush=True)
+
+    results = pd.DataFrame(results)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    results.to_csv(out / f"birdnet_train_{eval_name}_runs.csv", index=False)
+
+    metric = f"{eval_name}_macro_f1"
+    summary = (results.groupby(["k", "condition", "synth_set"], sort=False)[metric]
+               .agg(["mean", "std"]).round(3))
+    summary.to_csv(out / f"downstream_{eval_name}_summary.csv")
+    print("\n" + summary.to_string())
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    sub = ap.add_subparsers(dest="cmd", required=True)
+
+    e = sub.add_parser("embed")
+    e.add_argument("--crops", required=True)
+
+    r = sub.add_parser("run")
+    r.add_argument("--crops", required=True)
+    r.add_argument("--synth", nargs="+", default=[])
+    r.add_argument("--ks", nargs="+", default=[str(k) for k in KS])
+    r.add_argument("--out", default="../../results/birdnet_train")
+    r.add_argument("--final", action="store_true")
+
+    args = ap.parse_args()
+
+    if args.cmd == "embed":
+        cmd_embed(args)
+    else:
+        run(args)
+
+
+if __name__ == "__main__":
+    main()
